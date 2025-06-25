@@ -30,10 +30,17 @@ const AP_Param::GroupInfo AC_CustomControl_Adaptive::var_info[] = {
 };
 
 // initialize in the constructor
-AC_CustomControl_Adaptive::AC_CustomControl_Adaptive(AC_CustomControl& frontend, AP_AHRS_View*& ahrs, AC_AttitudeControl*& att_control, AP_MotorsMulticopter*& motors, float dt) :
+AC_CustomControl_Adaptive::AC_CustomControl_Adaptive(
+    AC_CustomControl &frontend,
+    AP_AHRS_View*& ahrs,
+    AC_AttitudeControl*& att_control,
+    AP_MotorsMulticopter*& motors,
+    float dt) :
     AC_CustomControl_Backend(frontend, ahrs, att_control, motors, dt)
 {
     AP_Param::setup_object_defaults(this, var_info);
+
+    simulinkn_controller.initialize();
 }
 
 // update controller
@@ -56,13 +63,31 @@ Vector3f AC_CustomControl_Adaptive::update(void)
             break;
     }
 
-    // arducopter main attitude controller already ran
-    // we don't need to do anything else
+    // run custom controller after here
+     Quaternion attitude_body, attitude_target;
+    _ahrs->get_quat_body_to_ned(attitude_body);
+
+    attitude_target = _att_control->get_attitude_target_quat();
+    Vector3f gyro_latest = _ahrs->get_gyro_latest();
+
+    // '<Root>/x_reference'
+    float arg_x_d[3]{attitude_target.get_euler_roll(), attitude_target.get_euler_pitch(), attitude_target.get_euler_yaw()};
+
+    // '<Root>/dx_measured'
+    float arg_d_x[3]{gyro_latest.x, gyro_latest.y, gyro_latest.z};
+
+    // '<Root>/x_measured'
+    float arg_x_real[3]{attitude_body.get_euler_roll(), attitude_body.get_euler_pitch(), attitude_body.get_euler_yaw()};
+
+    // '<Root>/u_out'
+    float arg_Out1[3];
+
+    simulinkn_controller.step(arg_x_d, arg_d_x, arg_x_real, arg_Out1);
 
     GCS_SEND_TEXT(MAV_SEVERITY_INFO, "Adaptive custom controller working");
 
     // return what arducopter main controller outputted
-    return Vector3f(_motors->get_roll(), _motors->get_pitch(), _motors->get_yaw());
+    return Vector3f(arg_Out1[0], arg_Out1[1], arg_Out1[2]);
 }
 
 // reset controller to avoid build up on the ground
