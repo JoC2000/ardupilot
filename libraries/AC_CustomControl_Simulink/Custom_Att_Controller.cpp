@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'Custom_Att_Controller'.
 //
-// Model version                  : 1.1
+// Model version                  : 1.25
 // Simulink Coder version         : 24.2 (R2024b) 21-Jun-2024
-// C/C++ source code generated on : Wed Jun 25 10:47:02 2025
+// C/C++ source code generated on : Wed Jun 25 17:54:11 2025
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -42,20 +42,48 @@ void Custom_Att_Controller::step(real32_T arg_x_d[3], real32_T arg_d_x[3],
   real32_T s_idx_1;
   real32_T s_idx_2_tmp;
 
+  // Params for tunning
+
+  // Reference Model
+
+  // Roll
+  real32_T l11 = 3.48F;
+  real32_T l12 = 5.65F;
+
+  // Pitch
+  real32_T l21 = 3.48F;
+  real32_T l22 = 5.65F;
+
+  // Yaw
+  real32_T l31 = 1.48F;
+  real32_T l32 = 2.35F;
+
+  // Controller
+  real32_T lambda_controller = 0.0052F;
+  real32_T k_roll = 0.0037F;
+  real32_T k_pitch = 0.0037F;
+  real32_T k_yaw = 0.0018F;
+
+  // Adaptation Laws
+  real32_T lambda_adaptation = 0.0015F;
+  real32_T P1_gain = 0.005F;
+  real32_T P2_gain = 0.005F;
+  real32_T P3_gain = 0.002F;
+
   // MATLAB Function: '<Root>/Reference Model' incorporates:
   //   DiscreteIntegrator: '<Root>/Discrete-Time Integrator1'
   //   DiscreteIntegrator: '<Root>/Discrete-Time Integrator2'
   //   Inport: '<Root>/x_reference'
 
-  rtb_ddx_m_idx_0 = (200.0F * arg_x_d[0] - 50.0F *
+  rtb_ddx_m_idx_0 = ((l11*l12) * arg_x_d[0] - (l11+l12) *
                      Custom_Att_Controller_DW.DiscreteTimeIntegrator1_DSTATE[0])
-    - 600.0F * Custom_Att_Controller_DW.DiscreteTimeIntegrator2_DSTATE[0];
-  rtb_ddx_m_idx_1 = (600.0F * arg_x_d[1] - 50.0F *
+    - (l11*l12) * Custom_Att_Controller_DW.DiscreteTimeIntegrator2_DSTATE[0];
+  rtb_ddx_m_idx_1 = ((l21*l22)  * arg_x_d[1] - (l21+l22) *
                      Custom_Att_Controller_DW.DiscreteTimeIntegrator1_DSTATE[1])
-    - 600.0F * Custom_Att_Controller_DW.DiscreteTimeIntegrator2_DSTATE[1];
-  rtb_ddx_m_idx_2 = (50.0F * arg_x_d[2] - 15.0F *
+    - (l21*l22) * Custom_Att_Controller_DW.DiscreteTimeIntegrator2_DSTATE[1];
+  rtb_ddx_m_idx_2 = ((l31*l32) * arg_x_d[2] - (l31+l32) *
                      Custom_Att_Controller_DW.DiscreteTimeIntegrator1_DSTATE[2])
-    - 50.0F * Custom_Att_Controller_DW.DiscreteTimeIntegrator2_DSTATE[2];
+    - (l31*l32) * Custom_Att_Controller_DW.DiscreteTimeIntegrator2_DSTATE[2];
 
   // MATLAB Function: '<Root>/Adaptation Law' incorporates:
   //   DiscreteIntegrator: '<Root>/Discrete-Time Integrator1'
@@ -65,19 +93,19 @@ void Custom_Att_Controller::step(real32_T arg_x_d[3], real32_T arg_d_x[3],
   //   MATLAB Function: '<Root>/Controller'
 
   ddxr = arg_d_x[0] - Custom_Att_Controller_DW.DiscreteTimeIntegrator1_DSTATE[0];
-  ddxr_idx_0 = rtb_ddx_m_idx_0 - 40.0F * ddxr;
+  ddxr_idx_0 = rtb_ddx_m_idx_0 - lambda_adaptation * ddxr;
   s = arg_x_real[0] - Custom_Att_Controller_DW.DiscreteTimeIntegrator2_DSTATE[0];
   s_idx_0 = arg_d_x[0] -
-    (Custom_Att_Controller_DW.DiscreteTimeIntegrator1_DSTATE[0] - 40.0F * s);
+    (Custom_Att_Controller_DW.DiscreteTimeIntegrator1_DSTATE[0] - lambda_adaptation * s);
 
   // MATLAB Function: '<Root>/Controller' incorporates:
   //   DiscreteIntegrator: '<Root>/Discrete-Time Integrator1'
   //   Inport: '<Root>/dx_measured'
   //   MATLAB Function: '<Root>/Adaptation Law'
 
-  ddxr_0 = rtb_ddx_m_idx_0 - 80.0F * ddxr;
+  ddxr_0 = rtb_ddx_m_idx_0 - lambda_controller * ddxr;
   s_0 = arg_d_x[0] - (Custom_Att_Controller_DW.DiscreteTimeIntegrator1_DSTATE[0]
-                      - 80.0F * s);
+                      - lambda_controller * s);
 
   // MATLAB Function: '<Root>/Adaptation Law' incorporates:
   //   DiscreteIntegrator: '<Root>/Discrete-Time Integrator1'
@@ -87,19 +115,19 @@ void Custom_Att_Controller::step(real32_T arg_x_d[3], real32_T arg_d_x[3],
   //   MATLAB Function: '<Root>/Controller'
 
   ddxr = arg_d_x[1] - Custom_Att_Controller_DW.DiscreteTimeIntegrator1_DSTATE[1];
-  ddxr_idx_1 = rtb_ddx_m_idx_1 - 40.0F * ddxr;
+  ddxr_idx_1 = rtb_ddx_m_idx_1 - lambda_adaptation * ddxr;
   s = arg_x_real[1] - Custom_Att_Controller_DW.DiscreteTimeIntegrator2_DSTATE[1];
   s_idx_1 = arg_d_x[1] -
-    (Custom_Att_Controller_DW.DiscreteTimeIntegrator1_DSTATE[1] - 40.0F * s);
+    (Custom_Att_Controller_DW.DiscreteTimeIntegrator1_DSTATE[1] - lambda_adaptation * s);
 
   // MATLAB Function: '<Root>/Controller' incorporates:
   //   DiscreteIntegrator: '<Root>/Discrete-Time Integrator1'
   //   Inport: '<Root>/dx_measured'
   //   MATLAB Function: '<Root>/Adaptation Law'
 
-  ddxr_1 = rtb_ddx_m_idx_1 - 80.0F * ddxr;
+  ddxr_1 = rtb_ddx_m_idx_1 - lambda_controller * ddxr;
   s_1 = arg_d_x[1] - (Custom_Att_Controller_DW.DiscreteTimeIntegrator1_DSTATE[1]
-                      - 80.0F * s);
+                      - lambda_controller * s);
 
   // MATLAB Function: '<Root>/Adaptation Law' incorporates:
   //   DiscreteIntegrator: '<Root>/Discrete-Time Integrator1'
@@ -109,10 +137,10 @@ void Custom_Att_Controller::step(real32_T arg_x_d[3], real32_T arg_d_x[3],
   //   MATLAB Function: '<Root>/Controller'
 
   ddxr = arg_d_x[2] - Custom_Att_Controller_DW.DiscreteTimeIntegrator1_DSTATE[2];
-  ddxr_idx_2 = rtb_ddx_m_idx_2 - 40.0F * ddxr;
+  ddxr_idx_2 = rtb_ddx_m_idx_2 - lambda_adaptation * ddxr;
   s = arg_x_real[2] - Custom_Att_Controller_DW.DiscreteTimeIntegrator2_DSTATE[2];
   s_idx_2_tmp = arg_d_x[2] -
-    (Custom_Att_Controller_DW.DiscreteTimeIntegrator1_DSTATE[2] - 40.0F * s);
+    (Custom_Att_Controller_DW.DiscreteTimeIntegrator1_DSTATE[2] - lambda_adaptation * s);
 
   // MATLAB Function: '<Root>/Controller' incorporates:
   //   Inport: '<Root>/dx_measured'
@@ -128,7 +156,7 @@ void Custom_Att_Controller::step(real32_T arg_x_d[3], real32_T arg_d_x[3],
                  Custom_Att_Controller_DW.DiscreteTimeIntegrator_DSTATE[1] +
                  ddxr_0 *
                  Custom_Att_Controller_DW.DiscreteTimeIntegrator_DSTATE[0]) +
-    -7.5F * s_0;
+    -k_roll * s_0;
 
   // MATLAB Function: '<Root>/Controller' incorporates:
   //   Inport: '<Root>/dx_measured'
@@ -144,7 +172,7 @@ void Custom_Att_Controller::step(real32_T arg_x_d[3], real32_T arg_d_x[3],
                  Custom_Att_Controller_DW.DiscreteTimeIntegrator_DSTATE[3] +
                  ddxr_1 *
                  Custom_Att_Controller_DW.DiscreteTimeIntegrator_DSTATE[2]) +
-    -6.4F * s_1;
+    -k_pitch * s_1;
 
   // MATLAB Function: '<Root>/Controller' incorporates:
   //   Inport: '<Root>/dx_measured'
@@ -161,7 +189,7 @@ void Custom_Att_Controller::step(real32_T arg_x_d[3], real32_T arg_d_x[3],
 
   arg_Out1[2] = (arg_d_x[2] -
                  (Custom_Att_Controller_DW.DiscreteTimeIntegrator1_DSTATE[2] -
-                  80.0F * s)) * -2.5F + ((rtb_ddx_m_idx_2 - 80.0F * ddxr) *
+                  lambda_controller * s)) * -k_yaw + ((rtb_ddx_m_idx_2 - lambda_controller * ddxr) *
     Custom_Att_Controller_DW.DiscreteTimeIntegrator_DSTATE[4] + ddxr_1 *
     Custom_Att_Controller_DW.DiscreteTimeIntegrator_DSTATE[5]);
 
@@ -169,19 +197,22 @@ void Custom_Att_Controller::step(real32_T arg_x_d[3], real32_T arg_d_x[3],
   //   DiscreteIntegrator: '<Root>/Discrete-Time Integrator'
 
   ddxr = -s_idx_0 * 0.0F;
-  tmp[0] = (ddxr * arg_Out1_tmp + -s_idx_0 * ddxr_idx_0) *
+  s_idx_0 = -s_idx_0 * P1_gain;
+  tmp[0] = (s_idx_0 * ddxr_idx_0 + ddxr * arg_Out1_tmp) *
     Custom_Att_Controller_P.DiscreteTimeIntegrator_gainval;
   s = -s_idx_1 * 0.0F;
-  tmp[2] = (s * ddxr_0 + -s_idx_1 * ddxr_idx_1) *
+  s_idx_1 = -s_idx_1 * P2_gain;
+  tmp[2] = (s_idx_1 * ddxr_idx_1 + s * ddxr_0) *
     Custom_Att_Controller_P.DiscreteTimeIntegrator_gainval;
   s_0 = -s_idx_2_tmp * 0.0F;
-  tmp[4] = (s_0 * ddxr_1 + -s_idx_2_tmp * ddxr_idx_2) *
+  s_idx_2_tmp = -s_idx_2_tmp * P3_gain;
+  tmp[4] = (s_idx_2_tmp * ddxr_idx_2 + s_0 * ddxr_1) *
     Custom_Att_Controller_P.DiscreteTimeIntegrator_gainval;
-  tmp[1] = (ddxr * ddxr_idx_0 + -s_idx_0 * arg_Out1_tmp) *
+  tmp[1] = (ddxr * ddxr_idx_0 + s_idx_0 * arg_Out1_tmp) *
     Custom_Att_Controller_P.DiscreteTimeIntegrator_gainval;
-  tmp[3] = (s * ddxr_idx_1 + -s_idx_1 * ddxr_0) *
+  tmp[3] = (s * ddxr_idx_1 + s_idx_1 * ddxr_0) *
     Custom_Att_Controller_P.DiscreteTimeIntegrator_gainval;
-  tmp[5] = (s_0 * ddxr_idx_2 + -s_idx_2_tmp * ddxr_1) *
+  tmp[5] = (s_0 * ddxr_idx_2 + s_idx_2_tmp * ddxr_1) *
     Custom_Att_Controller_P.DiscreteTimeIntegrator_gainval;
 
   // Update for DiscreteIntegrator: '<Root>/Discrete-Time Integrator'
