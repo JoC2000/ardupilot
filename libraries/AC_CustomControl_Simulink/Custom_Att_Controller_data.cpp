@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'Custom_Att_Controller'.
 //
-// Model version                  : 1.24
+// Model version                  : 1.49
 // Simulink Coder version         : 24.2 (R2024b) 21-Jun-2024
-// C/C++ source code generated on : Wed Jun 25 16:19:35 2025
+// C/C++ source code generated on : Tue Jul  8 17:45:19 2025
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -21,35 +21,25 @@
 // Block parameters (default storage)
 Custom_Att_Controller::P_Custom_Att_Controller_T Custom_Att_Controller::
   Custom_Att_Controller_P{
-  // Computed Parameter: DiscreteTimeIntegrator_gainval
-  //  Referenced by: '<Root>/Discrete-Time Integrator'
+  // Computed Parameter: ah_gainval
+  //  Referenced by: '<Root>/ah'
 
   0.0025F,
 
-  // Computed Parameter: DiscreteTimeIntegrator_IC
-  //  Referenced by: '<Root>/Discrete-Time Integrator'
+  // Computed Parameter: ah_IC
+  //  Referenced by: '<Root>/ah'
 
   0.0F,
 
-  // Computed Parameter: DiscreteTimeIntegrator2_gainval
-  //  Referenced by: '<Root>/Discrete-Time Integrator2'
+  // Computed Parameter: x_m_gainval
+  //  Referenced by: '<Root>/x_m'
 
   0.0025F,
 
-  // Computed Parameter: DiscreteTimeIntegrator2_IC
-  //  Referenced by: '<Root>/Discrete-Time Integrator2'
+  // Computed Parameter: dx_m_integrator_gainval
+  //  Referenced by: '<Root>/dx_m_integrator'
 
-  0.0F,
-
-  // Computed Parameter: DiscreteTimeIntegrator1_gainval
-  //  Referenced by: '<Root>/Discrete-Time Integrator1'
-
-  0.0025F,
-
-  // Computed Parameter: DiscreteTimeIntegrator1_IC
-  //  Referenced by: '<Root>/Discrete-Time Integrator1'
-
-  0.0F
+  0.0025F
 };
 
 //

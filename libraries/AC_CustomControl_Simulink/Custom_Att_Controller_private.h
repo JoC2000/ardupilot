@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'Custom_Att_Controller'.
 //
-// Model version                  : 1.24
+// Model version                  : 1.49
 // Simulink Coder version         : 24.2 (R2024b) 21-Jun-2024
-// C/C++ source code generated on : Wed Jun 25 16:19:35 2025
+// C/C++ source code generated on : Tue Jul  8 17:45:19 2025
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: ARM Compatible->ARM Cortex-M
