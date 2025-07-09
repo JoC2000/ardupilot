@@ -38,25 +38,25 @@ void Custom_Att_Controller::step(real32_T arg_x_d[3], real32_T arg_d_x[3],
   real32_T s_idx_1;
   real32_T s_idx_2;
 
-  real32_T lambda_controller = 1.37;
-  real32_T k2 = 0.0070;
-  real32_T k3 = 0.0070;
-  real32_T k4 = 0.004;
+  real32_T lambda_controller = 1.87;
+  real32_T k2 = 0.112;
+  real32_T k3 = 0.112;
+  real32_T k4 = 0.110;
 
-  real32_T lambda_adaptation = 0.12;
-  real32_T P1_gain = 0.003;
-  real32_T P1_11 = 0.45;
-  real32_T P1_22 = 0.10;
+  real32_T lambda_adaptation = 0.065;
+  real32_T P1_gain = 0.0012;
+  real32_T P1_11 = 0.75;
+  real32_T P1_22 = 0.15;
 
-  real32_T P2_gain = 0.008;
+  real32_T P2_gain = 0.0012;
   real32_T P2_11 = 0.75;
-  real32_T P2_22 = 0.10;
+  real32_T P2_22 = 0.15;
 
-  real32_T P3_gain = 0.001;
+  real32_T P3_gain = 0.0008;
   real32_T P3_11 = 0.08;
-  real32_T P3_22 = 0.05;
+  real32_T P3_22 = 0.10;
 
-  real32_T sigma = 0.3;
+  real32_T sigma = 0.025;
 
   static const real32_T c[18]{ 0.0F, 19.662F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F,
     0.0F, 19.662F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 3.478F };
