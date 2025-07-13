@@ -19,6 +19,17 @@
 #include "Custom_Att_Controller.h"
 #include "rtwtypes.h"
 
+real32_T Custom_Att_Controller::unwrap_angle(real32_T prev, real32_T current)
+{
+  float diff = current - prev;
+  if (diff > M_PI) {
+    current -= 2.0f * M_PI;
+  } else if (diff < -M_PI) {
+    current += 2.0f * M_PI;
+  }
+  return current;
+}
+
 // Model step function
 void Custom_Att_Controller::step(real32_T arg_x_d[3], real32_T arg_d_x[3],
   real32_T arg_x_real[3], real32_T arg_Out1[3])
@@ -38,25 +49,45 @@ void Custom_Att_Controller::step(real32_T arg_x_d[3], real32_T arg_d_x[3],
   real32_T s_idx_1;
   real32_T s_idx_2;
 
-  real32_T lambda_controller = 1.87;
-  real32_T k2 = 0.112;
-  real32_T k3 = 0.112;
-  real32_T k4 = 0.110;
+  real32_T lambda_controller = 2.54F;
+  real32_T k2 = 0.387F;
+  real32_T k3 = 0.387F;
+  real32_T k4 = 0.235F;
 
-  real32_T lambda_adaptation = 0.065;
-  real32_T P1_gain = 0.0012;
-  real32_T P1_11 = 0.75;
-  real32_T P1_22 = 0.15;
+  real32_T lambda_adaptation = 0.1F;
+  real32_T P1_gain = 0.012F;
+  real32_T P1_11 = 0.75F;
+  real32_T P1_22 = 0.15F;
 
-  real32_T P2_gain = 0.0012;
-  real32_T P2_11 = 0.75;
-  real32_T P2_22 = 0.15;
+  real32_T P2_gain = 0.012F;
+  real32_T P2_11 = 0.75F;
+  real32_T P2_22 = 0.15F;
 
-  real32_T P3_gain = 0.0008;
-  real32_T P3_11 = 0.08;
-  real32_T P3_22 = 0.10;
+  real32_T P3_gain = 0.012F;
+  real32_T P3_11 = 0.25F;
+  real32_T P3_22 = 0.10F;
 
-  real32_T sigma = 0.025;
+  real32_T sigma = 0.025F;
+  
+  static real32_T prev_yaw_ref = 0.0F;
+  static real32_T prev_yaw_real = 0.0F;
+  static real32_T prev_yaw_model = 0.0F;
+
+  real32_T raw_yaw_ref = arg_x_d[2];
+  real32_T raw_yaw_real = arg_x_real[2];
+  real32_T raw_yaw_model = Custom_Att_Controller_DW.x_m_DSTATE[2];
+
+  real32_T unwrapped_yaw_ref = unwrap_angle(prev_yaw_ref, raw_yaw_ref);
+  real32_T unwrapped_yaw_real = unwrap_angle(prev_yaw_real, raw_yaw_real);
+  real32_T unwrapped_yaw_model = unwrap_angle(prev_yaw_model, raw_yaw_model);  
+  
+  prev_yaw_ref = unwrapped_yaw_ref;
+  prev_yaw_real = unwrapped_yaw_real;
+  prev_yaw_model = unwrapped_yaw_model;
+
+  arg_x_d[2] = unwrapped_yaw_ref;
+  arg_x_real[2] = unwrapped_yaw_real;
+  Custom_Att_Controller_DW.x_m_DSTATE[2] = unwrapped_yaw_model;
 
   static const real32_T c[18]{ 0.0F, 19.662F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F,
     0.0F, 19.662F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 3.478F };
@@ -160,7 +191,9 @@ void Custom_Att_Controller::step(real32_T arg_x_d[3], real32_T arg_d_x[3],
 
   ddxr_tmp_idx_2 = arg_d_x[2] - Custom_Att_Controller_DW.dx_m_integrator_DSTATE
     [2];
+  
   s = arg_x_real[2] - Custom_Att_Controller_DW.x_m_DSTATE[2];
+  
   s_idx_2 = arg_d_x[2] - (Custom_Att_Controller_DW.dx_m_integrator_DSTATE[2] -
     lambda_adaptation * s);
 

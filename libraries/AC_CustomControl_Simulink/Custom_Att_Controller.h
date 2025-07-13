@@ -88,6 +88,7 @@ class Custom_Att_Controller final
   // model terminate function
   static void terminate();
 
+  real32_T unwrap_angle(real32_T prev, real32_T current);
   // Constructor
   Custom_Att_Controller();
 
