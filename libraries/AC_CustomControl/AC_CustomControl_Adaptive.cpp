@@ -72,23 +72,23 @@ Vector3f AC_CustomControl_Adaptive::update(void)
     Vector3f gyro_latest = _ahrs->get_gyro_latest();
 
     // '<Root>/x_reference'
-    float arg_x_d[3]{attitude_target.get_euler_roll(), attitude_target.get_euler_pitch(), attitude_target.get_euler_yaw()};
+    float x_d[3]{attitude_target.get_euler_roll(), attitude_target.get_euler_pitch(), attitude_target.get_euler_yaw()};
 
     // '<Root>/dx_measured'
-    float arg_d_x[3]{gyro_latest.x, gyro_latest.y, gyro_latest.z};
+    float dx[3]{gyro_latest.x, gyro_latest.y, gyro_latest.z};
 
     // '<Root>/x_measured'
-    float arg_x_real[3]{attitude_body.get_euler_roll(), attitude_body.get_euler_pitch(), attitude_body.get_euler_yaw()};
+    float x[3]{attitude_body.get_euler_roll(), attitude_body.get_euler_pitch(), attitude_body.get_euler_yaw()};
 
     // '<Root>/u_out'
-    float arg_Out1[3];
+    float U[3];
 
-    simulinkn_controller.step(arg_x_d, arg_d_x, arg_x_real, arg_Out1, _dt);
+    simulinkn_controller.step(x_d, dx, x, U, _dt);
 
     GCS_SEND_TEXT(MAV_SEVERITY_INFO, "Adaptive custom controller working");
 
     // return what arducopter main controller outputted
-    return Vector3f(arg_Out1[0], arg_Out1[1], arg_Out1[2]);
+    return Vector3f(U[0], U[1], U[2]);
 }
 
 // reset controller to avoid build up on the ground
