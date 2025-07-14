@@ -32,7 +32,7 @@ real32_T Custom_Att_Controller::unwrap_angle(real32_T prev, real32_T current)
 
 // Model step function
 void Custom_Att_Controller::step(real32_T arg_x_d[3], real32_T arg_d_x[3],
-  real32_T arg_x_real[3], real32_T arg_Out1[3])
+  real32_T arg_x_real[3], real32_T arg_Out1[3], real32_T dt)
 {
   int32_T i;
   int32_T i_0;
@@ -49,7 +49,7 @@ void Custom_Att_Controller::step(real32_T arg_x_d[3], real32_T arg_d_x[3],
   real32_T s_idx_1;
   real32_T s_idx_2;
 
-  real32_T lambda_controller = 2.54F;
+  real32_T lambda_controller = 2.78F;
   real32_T k2 = 0.387F;
   real32_T k3 = 0.387F;
   real32_T k4 = 0.235F;
@@ -127,6 +127,10 @@ void Custom_Att_Controller::step(real32_T arg_x_d[3], real32_T arg_d_x[3],
   tmp[4] = Custom_Att_Controller_DW.x_m_DSTATE[2];
   tmp[5] = Custom_Att_Controller_DW.dx_m_integrator_DSTATE[2];
 
+  if (fabs(arg_x_real[2] - Custom_Att_Controller_DW.x_m_DSTATE[2]) > 0.005F) {
+    Custom_Att_Controller_DW.x_m_DSTATE[0] = 0.0F;
+    Custom_Att_Controller_DW.x_m_DSTATE[1] = 0.0F;
+  }
   // MATLAB Function: '<Root>/Reference Model' incorporates:
   //   Inport: '<Root>/x_reference'
 
@@ -138,6 +142,11 @@ void Custom_Att_Controller::step(real32_T arg_x_d[3], real32_T arg_d_x[3],
 
     dxm[i] = ((c[i + 6] * arg_x_d[1] + c[i] * arg_x_d[0]) + c[i + 12] * arg_x_d
               [2]) + s_idx_2;
+  }
+
+  if (fabs(arg_x_real[2] - Custom_Att_Controller_DW.x_m_DSTATE[2]) > 0.01F) {
+    arg_x_d[0] = 0.0F;
+    arg_x_d[1] = 0.0F;
   }
 
   // MATLAB Function: '<Root>/Adaptation Law' incorporates:
@@ -258,28 +267,22 @@ void Custom_Att_Controller::step(real32_T arg_x_d[3], real32_T arg_d_x[3],
   s_idx_2 *= s_1;
   tmp[0] = ((-(P1_gain*P1_11) * ddxr_tmp_idx_0 + -0.0F * s_idx_0) - ((P1_gain*P1_11*sigma) *
              Custom_Att_Controller_DW.ah_DSTATE[0] +
-             Custom_Att_Controller_DW.ah_DSTATE[1] * 0.0F)) *
-    Custom_Att_Controller_P.ah_gainval;
+             Custom_Att_Controller_DW.ah_DSTATE[1] * 0.0F)) * dt;
   tmp[2] = ((-(P2_gain*P2_11) * ddxr_tmp_idx_1 + -0.0F * s_idx_1) - ((P2_gain*P2_11*sigma) *
              Custom_Att_Controller_DW.ah_DSTATE[2] + 0.0F *
-             Custom_Att_Controller_DW.ah_DSTATE[3])) *
-    Custom_Att_Controller_P.ah_gainval;
+             Custom_Att_Controller_DW.ah_DSTATE[3])) * dt;
   tmp[4] = ((-(P3_gain*P3_11) * ddxr_tmp_idx_2 + -0.0F * s_idx_2) - ((P3_gain*P3_11*sigma) *
              Custom_Att_Controller_DW.ah_DSTATE[4] + 0.0F *
-             Custom_Att_Controller_DW.ah_DSTATE[5])) *
-    Custom_Att_Controller_P.ah_gainval;
+             Custom_Att_Controller_DW.ah_DSTATE[5])) * dt;
   tmp[1] = ((-0.0F * ddxr_tmp_idx_0 + -(P1_gain*P1_22) * s_idx_0) -
             (Custom_Att_Controller_DW.ah_DSTATE[0] * 0.0F +
-             Custom_Att_Controller_DW.ah_DSTATE[1] * (P1_gain*P1_22*sigma))) *
-    Custom_Att_Controller_P.ah_gainval;
+             Custom_Att_Controller_DW.ah_DSTATE[1] * (P1_gain*P1_22*sigma))) * dt;
   tmp[3] = ((-0.0F * ddxr_tmp_idx_1 + -(P2_gain*P2_22) * s_idx_1) - (0.0F *
              Custom_Att_Controller_DW.ah_DSTATE[2] + (P2_gain*P2_22*sigma) *
-             Custom_Att_Controller_DW.ah_DSTATE[3])) *
-    Custom_Att_Controller_P.ah_gainval;
+             Custom_Att_Controller_DW.ah_DSTATE[3])) * dt;
   tmp[5] = ((-0.0F * ddxr_tmp_idx_2 + -(P3_gain*P3_22) * s_idx_2) - (0.0F *
              Custom_Att_Controller_DW.ah_DSTATE[4] + (P3_gain*P3_22*sigma) *
-             Custom_Att_Controller_DW.ah_DSTATE[5])) *
-    Custom_Att_Controller_P.ah_gainval;
+             Custom_Att_Controller_DW.ah_DSTATE[5])) * dt;
 
   // Update for DiscreteIntegrator: '<Root>/ah'
   for (i = 0; i < 6; i++) {
@@ -293,12 +296,9 @@ void Custom_Att_Controller::step(real32_T arg_x_d[3], real32_T arg_d_x[3],
   s_idx_2 = Custom_Att_Controller_DW.x_m_DSTATE[0];
   ddxr_tmp_idx_2 = Custom_Att_Controller_DW.x_m_DSTATE[1];
   s_idx_1 = Custom_Att_Controller_DW.x_m_DSTATE[2];
-  Custom_Att_Controller_DW.x_m_DSTATE[0] = Custom_Att_Controller_P.x_m_gainval *
-    dxm[0] + s_idx_2;
-  Custom_Att_Controller_DW.x_m_DSTATE[1] = Custom_Att_Controller_P.x_m_gainval *
-    dxm[2] + ddxr_tmp_idx_2;
-  Custom_Att_Controller_DW.x_m_DSTATE[2] = Custom_Att_Controller_P.x_m_gainval *
-    dxm[4] + s_idx_1;
+  Custom_Att_Controller_DW.x_m_DSTATE[0] = dt * dxm[0] + s_idx_2;
+  Custom_Att_Controller_DW.x_m_DSTATE[1] = dt * dxm[2] + ddxr_tmp_idx_2;
+  Custom_Att_Controller_DW.x_m_DSTATE[2] = dt * dxm[4] + s_idx_1;
 
   // Update for DiscreteIntegrator: '<Root>/dx_m_integrator' incorporates:
   //   MATLAB Function: '<Root>/Reference Model'
@@ -307,12 +307,9 @@ void Custom_Att_Controller::step(real32_T arg_x_d[3], real32_T arg_d_x[3],
   s_idx_2 = Custom_Att_Controller_DW.dx_m_integrator_DSTATE[0];
   ddxr_tmp_idx_2 = Custom_Att_Controller_DW.dx_m_integrator_DSTATE[1];
   s_idx_1 = Custom_Att_Controller_DW.dx_m_integrator_DSTATE[2];
-  Custom_Att_Controller_DW.dx_m_integrator_DSTATE[0] =
-    Custom_Att_Controller_P.dx_m_integrator_gainval * dxm[1] + s_idx_2;
-  Custom_Att_Controller_DW.dx_m_integrator_DSTATE[1] =
-    Custom_Att_Controller_P.dx_m_integrator_gainval * dxm[3] + ddxr_tmp_idx_2;
-  Custom_Att_Controller_DW.dx_m_integrator_DSTATE[2] =
-    Custom_Att_Controller_P.dx_m_integrator_gainval * dxm[5] + s_idx_1;
+  Custom_Att_Controller_DW.dx_m_integrator_DSTATE[0] = dt * dxm[1] + s_idx_2;
+  Custom_Att_Controller_DW.dx_m_integrator_DSTATE[1] = dt * dxm[3] + ddxr_tmp_idx_2;
+  Custom_Att_Controller_DW.dx_m_integrator_DSTATE[2] = dt * dxm[5] + s_idx_1;
 }
 
 // Model initialize function

@@ -38,6 +38,7 @@ AC_CustomControl_Adaptive::AC_CustomControl_Adaptive(
     float dt) :
     AC_CustomControl_Backend(frontend, ahrs, att_control, motors, dt)
 {
+    _dt = dt;
     AP_Param::setup_object_defaults(this, var_info);
 
     simulinkn_controller.initialize();
@@ -82,7 +83,7 @@ Vector3f AC_CustomControl_Adaptive::update(void)
     // '<Root>/u_out'
     float arg_Out1[3];
 
-    simulinkn_controller.step(arg_x_d, arg_d_x, arg_x_real, arg_Out1);
+    simulinkn_controller.step(arg_x_d, arg_d_x, arg_x_real, arg_Out1, _dt);
 
     GCS_SEND_TEXT(MAV_SEVERITY_INFO, "Adaptive custom controller working");
 

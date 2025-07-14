@@ -33,6 +33,8 @@ static real32_T arg_x_real[3]{ 0.0F, 0.0F, 0.0F };
 // '<Root>/u_out'
 static real32_T arg_Out1[3];
 
+static real32_T dt;
+
 //
 // Associating rt_OneStep with a real-time clock or interrupt service routine
 // is what makes the generated code "real-time".  The function rt_OneStep is
@@ -64,7 +66,7 @@ void rt_OneStep(void)
   // Set model inputs here
 
   // Step the model
-  Custom_Att_Controller_Obj.step(arg_x_d, arg_d_x, arg_x_real, arg_Out1);
+  Custom_Att_Controller_Obj.step(arg_x_d, arg_d_x, arg_x_real, arg_Out1, dt);
 
   // Get model outputs here
 

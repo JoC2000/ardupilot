@@ -82,8 +82,7 @@ class Custom_Att_Controller final
   void initialize();
 
   // model step function
-  void step(real32_T arg_x_d[3], real32_T arg_d_x[3], real32_T arg_x_real[3],
-            real32_T arg_Out1[3]);
+  void step(real32_T arg_x_d[3], real32_T arg_d_x[3], real32_T arg_x_real[3], real32_T arg_Out1[3], real32_T dt);
 
   // model terminate function
   static void terminate();

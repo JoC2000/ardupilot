@@ -25,6 +25,7 @@ public:
 
 protected:
     // declare parameters here
+    float _dt;
     AP_Float param1;
     AP_Float param2;
     AP_Float param3;
