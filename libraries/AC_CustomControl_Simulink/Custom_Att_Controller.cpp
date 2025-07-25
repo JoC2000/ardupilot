@@ -29,10 +29,10 @@ void Custom_Att_Controller::step(float x_d[3], float dx[3], float x[3], float U[
   float temp;
 
   // Tuning parameters
-  float lambda_controller = 2.78F;
-  float k2 = 0.387F;
-  float k3 = 0.387F;
-  float k4 = 0.235F;
+  float lambda_controller = 2.1F;
+  float k2 = 0.287F;
+  float k3 = 0.287F;
+  float k4 = 0.135F;
 
   float lambda_adaptation = 0.1F;
   float P1_gain = 0.012F;
