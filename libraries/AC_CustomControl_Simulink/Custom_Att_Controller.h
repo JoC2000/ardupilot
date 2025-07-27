@@ -1,6 +1,6 @@
 #pragma once
 #include <cmath>
-
+#include <AP_Logger/AP_Logger.h>
 // Class declaration for model Custom_Att_Controller
 class Custom_Att_Controller final
 {
@@ -36,6 +36,12 @@ class Custom_Att_Controller final
   // Unwrap function
   float unwrap_angle(float prev, float current);
 
+  void Log_CC0(float u_roll, float u_pitch, float u_yaw, 
+           float xm_r, float xm_p, float xm_y,
+           float dxm_r, float dxm_p, float dxm_y) const;
+  
+  void Log_CC1(float ah_r1, float ah_r2, float ah_p1, 
+           float ah_p2, float ah_y1, float ah_y2) const;
   // Constructor
   Custom_Att_Controller();
 
