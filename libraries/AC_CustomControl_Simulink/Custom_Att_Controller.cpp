@@ -111,11 +111,6 @@ void Custom_Att_Controller::step(float x_d[3], float dx[3], float x[3], float U[
   xm[4] = Block_State.x_m[2];
   xm[5] = Block_State.dx_m[2];
 
-  if (fabs(x[2] - Block_State.x_m[2]) > 0.005F) {
-    Block_State.x_m[0] = 0.0F;
-    Block_State.x_m[1] = 0.0F;
-  }
-
   for (i = 0; i < 6; i++) {
     temp = 0.0F;
     for (i_0 = 0; i_0 < 6; i_0++) {
