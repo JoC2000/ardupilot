@@ -244,12 +244,12 @@ void Custom_Att_Controller::initialize()
   l3 = 1.48F;
   l4 = 2.35F;
 
-  lambda_controller = 2.1F;
-  k2 = 0.287F;
-  k3 = 0.287F;
+  lambda_controller = 4.76F;
+  k2 = 0.387F;
+  k3 = 0.387F;
   k4 = 0.135F;
 
-  lambda_adaptation = 0.1F;
+  lambda_adaptation = 0.2F;
   P1_gain = 0.012F;
   P1_11 = 0.75F;
   P1_22 = 0.15F;
