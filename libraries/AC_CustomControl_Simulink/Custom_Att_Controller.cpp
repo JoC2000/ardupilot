@@ -20,12 +20,12 @@ void Custom_Att_Controller::Log_CC0(float u_roll, float u_pitch, float u_yaw,
     u_roll      : u_roll,
     u_pitch     : u_pitch,
     u_yaw       : u_yaw,
-    xm_roll     : xm_r,
-    xm_pitch    : xm_p,
-    xm_yaw      : xm_y,
-    dxm_roll    : dxm_r,
-    dxm_pitch   : dxm_p,
-    dxm_yaw     : dxm_y,
+    xm_roll     : degrees(xm_r),
+    xm_pitch    : degrees(xm_p),
+    xm_yaw      : degrees(xm_y),
+    dxm_roll    : degrees(dxm_r),
+    dxm_pitch   : degrees(dxm_p),
+    dxm_yaw     : degrees(dxm_y),
   };
   AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
