@@ -52,4 +52,23 @@ class Custom_Att_Controller final
  private:
   // Block states
   DW_Custom_Att_Controller_T Block_State;
+
+  // Tuning parameters
+  float l1,l2,l3,l4;
+
+  float lambda_controller;
+  
+  float k2,k3,k4;
+
+  float lambda_adaptation;
+
+  float P1_gain,P1_11,P1_22;
+  
+  float P2_gain,P2_11,P2_22;
+
+  float P3_gain,P3_11,P3_22;
+
+  float sigma;
+
+  float prev_yaw_ref,prev_yaw_real,prev_yaw_model;
 };

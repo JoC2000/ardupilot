@@ -62,37 +62,7 @@ void Custom_Att_Controller::step(float x_d[3], float dx[3], float x[3], float U[
   float s_controller[3];
   float temp;
 
-  // Tuning parameters
-  static const float l1 = 3.48F;
-  static const float l2 = 5.65F;
-  static const float l3 = 1.48F;
-  static const float l4 = 2.35F;
-
-  static const float lambda_controller = 2.1F;
-  static const float k2 = 0.287F;
-  static const float k3 = 0.287F;
-  static const float k4 = 0.135F;
-
-  static const float lambda_adaptation = 0.1F;
-  static const float P1_gain = 0.012F;
-  static const float P1_11 = 0.75F;
-  static const float P1_22 = 0.15F;
-
-  static const float P2_gain = 0.012F;
-  static const float P2_11 = 0.75F;
-  static const float P2_22 = 0.15F;
-
-  static const float P3_gain = 0.012F;
-  static const float P3_11 = 0.25F;
-  static const float P3_22 = 0.10F;
-
-  static const float sigma = 0.025F;
-  
   // Unwrap angles to avoid discontinuities
-  static float prev_yaw_ref = 0.0F;
-  static float prev_yaw_real = 0.0F;
-  static float prev_yaw_model = 0.0F;
-
   float raw_yaw_ref = x_d[2];
   float raw_yaw_real = x[2];
   float raw_yaw_model = Block_State.x_m[2];
@@ -267,6 +237,36 @@ void Custom_Att_Controller::initialize()
     // InitializeConditions for dx_m integrator
     Block_State.dx_m_integrator_IC_LOADING = 1U;
   }
+
+  // Tuning parameters
+  l1 = 3.48F;
+  l2 = 5.65F;
+  l3 = 1.48F;
+  l4 = 2.35F;
+
+  lambda_controller = 2.1F;
+  k2 = 0.287F;
+  k3 = 0.287F;
+  k4 = 0.135F;
+
+  lambda_adaptation = 0.1F;
+  P1_gain = 0.012F;
+  P1_11 = 0.75F;
+  P1_22 = 0.15F;
+
+  P2_gain = 0.012F;
+  P2_11 = 0.75F;
+  P2_22 = 0.15F;
+
+  P3_gain = 0.012F;
+  P3_11 = 0.25F;
+  P3_22 = 0.10F;
+
+  sigma = 0.025F;
+
+  prev_yaw_ref = 0.0F;
+  prev_yaw_real = 0.0F;
+  prev_yaw_model = 0.0F;
 }
 
 // Constructor
