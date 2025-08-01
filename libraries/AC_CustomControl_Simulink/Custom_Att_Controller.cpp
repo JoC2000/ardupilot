@@ -63,25 +63,30 @@ void Custom_Att_Controller::step(float x_d[3], float dx[3], float x[3], float U[
   float temp;
 
   // Tuning parameters
-  float lambda_controller = 2.1F;
-  float k2 = 0.287F;
-  float k3 = 0.287F;
-  float k4 = 0.135F;
+  static const float l1 = 3.48F;
+  static const float l2 = 5.65F;
+  static const float l3 = 1.48F;
+  static const float l4 = 2.35F;
 
-  float lambda_adaptation = 0.1F;
-  float P1_gain = 0.012F;
-  float P1_11 = 0.75F;
-  float P1_22 = 0.15F;
+  static const float lambda_controller = 2.1F;
+  static const float k2 = 0.287F;
+  static const float k3 = 0.287F;
+  static const float k4 = 0.135F;
 
-  float P2_gain = 0.012F;
-  float P2_11 = 0.75F;
-  float P2_22 = 0.15F;
+  static const float lambda_adaptation = 0.1F;
+  static const float P1_gain = 0.012F;
+  static const float P1_11 = 0.75F;
+  static const float P1_22 = 0.15F;
 
-  float P3_gain = 0.012F;
-  float P3_11 = 0.25F;
-  float P3_22 = 0.10F;
+  static const float P2_gain = 0.012F;
+  static const float P2_11 = 0.75F;
+  static const float P2_22 = 0.15F;
 
-  float sigma = 0.025F;
+  static const float P3_gain = 0.012F;
+  static const float P3_11 = 0.25F;
+  static const float P3_22 = 0.10F;
+
+  static const float sigma = 0.025F;
   
   // Unwrap angles to avoid discontinuities
   static float prev_yaw_ref = 0.0F;
@@ -104,13 +109,13 @@ void Custom_Att_Controller::step(float x_d[3], float dx[3], float x[3], float U[
   x[2] = unwrapped_yaw_real;
   Block_State.x_m[2] = unwrapped_yaw_model;
 
-  static const float c[18]{ 0.0F, 19.662F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F,
-    0.0F, 19.662F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 3.478F };
+  static const float b[18]{ 0.0F, l1*l2, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F,
+    0.0F, l1*l2, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, l3*l4 };
 
-  static const float b[36]{ 0.0F, -19.662F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F,
-    -9.13F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -19.662F, 0.0F, 0.0F, 0.0F,
-    0.0F, 1.0F, -9.13F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -3.478F, 0.0F,
-    0.0F, 0.0F, 0.0F, 1.0F, -5.48F };
+  static const float a[36]{ 0.0F, -(l1*l2), 0.0F, 0.0F, 0.0F, 0.0F, 1.0F,
+    -(l1+l2), 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -(l1*l2), 0.0F, 0.0F, 0.0F,
+    0.0F, 1.0F, -(l1+l2), 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -(l3*l4), 0.0F,
+    0.0F, 0.0F, 0.0F, 1.0F, -(l3+l4) };
 
   // x_m discrete integrator initial values
 
@@ -144,10 +149,10 @@ void Custom_Att_Controller::step(float x_d[3], float dx[3], float x[3], float U[
   for (i = 0; i < 6; i++) {
     temp = 0.0F;
     for (i_0 = 0; i_0 < 6; i_0++) {
-      temp += b[6 * i_0 + i] * xm[i_0];
+      temp += a[6 * i_0 + i] * xm[i_0];
     }
 
-    dxm[i] = ((c[i + 6] * x_d[1] + c[i] * x_d[0]) + c[i + 12] * x_d[2]) + temp;
+    dxm[i] = ((b[i + 6] * x_d[1] + b[i] * x_d[0]) + b[i + 12] * x_d[2]) + temp;
   }
   /*
   Model Reference outputs in State Space form:
