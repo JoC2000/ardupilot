@@ -184,17 +184,17 @@ void Custom_Att_Controller::step(float x_d[3], float dx[3], float x[3], float U[
   s_adaptation[2] = dx[2] - dxr_adaptation[2];
   ddxr_adaptation[2] = (dxm[5] - lambda_adaptation * derror[2]);
 
-  ah[0] = ((-(P1_gain*P1_11) * ddxr_adaptation[0] * s_adaptation[0] + -0.0F * s_adaptation[0] * dx[1] * dx[2]) - ((P1_gain*P1_11*sigma) * Block_State.ah[0] + Block_State.ah[1] * 0.0F)) * dt;
+  ah[0] = ((-(P1_gain*P1_11) * ddxr_adaptation[0] * s_adaptation[0] + -0.0F * s_adaptation[0] * dx[1] * dx[2]) - (sigma * Block_State.ah[0] + 0.0F * Block_State.ah[1])) * dt;
 
-  ah[2] = ((-(P2_gain*P2_11) * ddxr_adaptation[1] * s_adaptation[1] + -0.0F * s_adaptation[1] * dx[0] * dx[2]) - ((P2_gain*P2_11*sigma) * Block_State.ah[2] + 0.0F * Block_State.ah[3])) * dt;
+  ah[2] = ((-(P2_gain*P2_11) * ddxr_adaptation[1] * s_adaptation[1] + -0.0F * s_adaptation[1] * dx[0] * dx[2]) - (sigma * Block_State.ah[2] + 0.0F * Block_State.ah[3])) * dt;
 
-  ah[4] = ((-(P3_gain*P3_11) * ddxr_adaptation[2] * s_adaptation[2] + -0.0F * s_adaptation[2] * dx[0] * dx[1]) - ((P3_gain*P3_11*sigma) * Block_State.ah[4] + 0.0F * Block_State.ah[5])) * dt;
+  ah[4] = ((-(P3_gain*P3_11) * ddxr_adaptation[2] * s_adaptation[2] + -0.0F * s_adaptation[2] * dx[0] * dx[1]) - (sigma * Block_State.ah[4] + 0.0F * Block_State.ah[5])) * dt;
   
-  ah[1] = ((-0.0F * ddxr_adaptation[0] * s_adaptation[0] + -(P1_gain*P1_22) * s_adaptation[0] * dx[1] * dx[2]) - (Block_State.ah[0] * 0.0F + Block_State.ah[1] * (P1_gain*P1_22*sigma))) * dt;
+  ah[1] = ((-0.0F * ddxr_adaptation[0] * s_adaptation[0] + -(P1_gain*P1_22) * s_adaptation[0] * dx[1] * dx[2]) - (0.0F * Block_State.ah[0] + sigma * Block_State.ah[1])) * dt;
 
-  ah[3] = ((-0.0F * ddxr_adaptation[1] * s_adaptation[1] + -(P2_gain*P2_22) * s_adaptation[1] * dx[0] * dx[2]) - (0.0F * Block_State.ah[2] + (P2_gain*P2_22*sigma) * Block_State.ah[3])) * dt;
+  ah[3] = ((-0.0F * ddxr_adaptation[1] * s_adaptation[1] + -(P2_gain*P2_22) * s_adaptation[1] * dx[0] * dx[2]) - (0.0F * Block_State.ah[2] + sigma * Block_State.ah[3])) * dt;
 
-  ah[5] = ((-0.0F * ddxr_adaptation[2] * s_adaptation[2] + -(P3_gain*P3_22) * s_adaptation[2] * dx[0] * dx[1]) - (0.0F * Block_State.ah[4] + (P3_gain*P3_22*sigma) * Block_State.ah[5])) * dt;
+  ah[5] = ((-0.0F * ddxr_adaptation[2] * s_adaptation[2] + -(P3_gain*P3_22) * s_adaptation[2] * dx[0] * dx[1]) - (0.0F * Block_State.ah[4] + sigma * Block_State.ah[5])) * dt;
 
   // Update for ah discrete integrator
   for (i = 0; i < 6; i++) {
@@ -223,14 +223,14 @@ void Custom_Att_Controller::initialize()
 
     // Initialize Conditions for ah integrator
     for (i = 0; i < 6; i++) {
-      Block_State.ah[i] = 0U;
+      Block_State.ah[i] = 0.0F;
     }
 
     // InitializeConditions for x_m integrator
-    Block_State.x_m_IC_LOADING = 1U;
+    Block_State.x_m_IC_LOADING = 1.0F;
 
     // InitializeConditions for dx_m integrator
-    Block_State.dx_m_integrator_IC_LOADING = 1U;
+    Block_State.dx_m_integrator_IC_LOADING = 1.0F;
   }
 
   // Tuning parameters
@@ -240,11 +240,11 @@ void Custom_Att_Controller::initialize()
   l4 = 2.35F;
 
   lambda_controller = 4.76F;
-  k2 = 0.387F;
-  k3 = 0.387F;
+  k2 = 0.267F;
+  k3 = 0.267F;
   k4 = 0.135F;
 
-  lambda_adaptation = 0.2F;
+  lambda_adaptation = 0.06F;
   P1_gain = 0.012F;
   P1_11 = 0.75F;
   P1_22 = 0.15F;
@@ -257,7 +257,7 @@ void Custom_Att_Controller::initialize()
   P3_11 = 0.25F;
   P3_22 = 0.10F;
 
-  sigma = 0.025F;
+  sigma = 0.1F;
 
   prev_yaw_ref = 0.0F;
   prev_yaw_real = 0.0F;

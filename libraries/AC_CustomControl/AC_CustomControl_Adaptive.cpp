@@ -85,8 +85,6 @@ Vector3f AC_CustomControl_Adaptive::update(void)
 
     simulinkn_controller.step(x_d, dx, x, U, _dt);
 
-    GCS_SEND_TEXT(MAV_SEVERITY_INFO, "Adaptive custom controller working");
-
     // return what arducopter main controller outputted
     return Vector3f(U[0], U[1], U[2]);
 }
