@@ -38,7 +38,6 @@ struct PACKED log_CC0 {
 struct PACKED log_CC1 {
     LOG_PACKET_HEADER;
     uint64_t time_us;
-    float dt;
     float ah_r1;
     float ah_r2;
     float ah_p1;
@@ -51,7 +50,7 @@ struct PACKED log_CC1 {
     { LOG_CC0_MSG, sizeof(log_CC0), \
         "CCL0", "Qfffffffff", "TimeUS,Uroll,Upitch,Uyaw,Xmr,Xmp,Xmy,Dxmr,Dxmp,Dxmy", "s---------", "F---------" , true }, \
     { LOG_CC1_MSG, sizeof(log_CC1), \
-        "CCL1", "Qfffffff", "TimeUS,dt,ah_r1,ah_r2,ah_p1,ah_p2,ah_y1,ah_y2", "s-------", "F-------", true},
+        "CCL1", "Qffffff", "TimeUS,ah_r1,ah_r2,ah_p1,ah_p2,ah_y1,ah_y2", "s------", "F------", true},
 #else
 #define LOG_STRUCTURE_FROM_CC
 #endif
