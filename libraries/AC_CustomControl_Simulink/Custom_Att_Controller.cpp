@@ -17,6 +17,7 @@ void Custom_Att_Controller::Log_CC0(float u_roll, float u_pitch, float u_yaw,
 {
   struct log_CC0 pkt = {
     LOG_PACKET_HEADER_INIT(LOG_CC0_MSG),
+    time_us     : AP_HAL::micros64(),
     u_roll      : u_roll,
     u_pitch     : u_pitch,
     u_yaw       : u_yaw,
@@ -35,6 +36,7 @@ void Custom_Att_Controller::Log_CC1(float ah_r1, float ah_r2, float ah_p1,
 {
   struct log_CC1 pkt = {
     LOG_PACKET_HEADER_INIT(LOG_CC1_MSG),
+    time_us     : AP_HAL::micros64(),
     ah_r1       : ah_r1,
     ah_r2       : ah_r2,
     ah_p1       : ah_p1,
@@ -44,6 +46,8 @@ void Custom_Att_Controller::Log_CC1(float ah_r1, float ah_r2, float ah_p1,
   };
   AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
+
+uint8_t log_div = 0;
 
 void Custom_Att_Controller::step(float x_d[3], float dx[3], float x[3], float U[3], float dt)
 {
@@ -163,13 +167,16 @@ void Custom_Att_Controller::step(float x_d[3], float dx[3], float x[3], float U[
 
   U[2] = -k4 * s_controller[2] + (ddxr_controller[2] * Block_State.ah[4] + dx[0] * dx[1] * Block_State.ah[5]);
 
-  Log_CC0(U[0], U[1], U[2],
+  if(++log_div >= 8){
+    log_div = 0;
+    Log_CC0(U[0], U[1], U[2],
       Block_State.x_m[0], Block_State.x_m[1], Block_State.x_m[2],
       Block_State.dx_m[0], Block_State.dx_m[1], Block_State.dx_m[2]);
 
-  Log_CC1(Block_State.ah[0], Block_State.ah[1],
-          Block_State.ah[2], Block_State.ah[3],
-          Block_State.ah[4], Block_State.ah[5]);
+    Log_CC1(Block_State.ah[0], Block_State.ah[1],
+      Block_State.ah[2], Block_State.ah[3],
+      Block_State.ah[4], Block_State.ah[5]);
+  }
   
   // Adaptation Law
   dxr_adaptation[0] = Block_State.dx_m[0] - lambda_adaptation * error[0];
