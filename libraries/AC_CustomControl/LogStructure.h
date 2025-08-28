@@ -33,6 +33,9 @@ struct PACKED log_CC0 {
     float dxm_roll;
     float dxm_pitch;
     float dxm_yaw;
+    float ddxm_roll;
+    float ddxm_pitch;
+    float ddxm_yaw;
 };
 
 struct PACKED log_CC1 {
@@ -48,7 +51,7 @@ struct PACKED log_CC1 {
 
 #define LOG_STRUCTURE_FROM_CC \
     { LOG_CC0_MSG, sizeof(log_CC0), \
-        "CCL0", "Qfffffffff", "TimeUS,Uroll,Upitch,Uyaw,Xmr,Xmp,Xmy,Dxmr,Dxmp,Dxmy", "s---------", "F---------" , true }, \
+        "CCL0", "Qffffffffffff", "TimeUS,Ur,Up,Uy,Xmr,Xmp,Xmy,Dxmr,Dxmp,Dxmy,Ddxmr,Ddxmp,Ddxmy", "s------------", "F------------" , true }, \
     { LOG_CC1_MSG, sizeof(log_CC1), \
         "CCL1", "Qffffff", "TimeUS,ah_r1,ah_r2,ah_p1,ah_p2,ah_y1,ah_y2", "s------", "F------", true},
 #else

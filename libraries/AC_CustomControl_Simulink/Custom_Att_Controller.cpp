@@ -11,9 +11,7 @@ float Custom_Att_Controller::unwrap_angle(float prev, float current)
   return current;
 }
 
-void Custom_Att_Controller::Log_CC0(float u_roll, float u_pitch, float u_yaw,
-                                float xm_r, float xm_p, float xm_y,
-                                float dxm_r, float dxm_p, float dxm_y) const
+void Custom_Att_Controller::Log_CC0(float u_roll, float u_pitch, float u_yaw, float xm_r, float xm_p, float xm_y, float dxm_r, float dxm_p, float dxm_y, float ddxmr, float ddxmp, float ddxmy) const
 {
   struct log_CC0 pkt = {
     LOG_PACKET_HEADER_INIT(LOG_CC0_MSG),
@@ -27,12 +25,14 @@ void Custom_Att_Controller::Log_CC0(float u_roll, float u_pitch, float u_yaw,
     dxm_roll    : degrees(dxm_r),
     dxm_pitch   : degrees(dxm_p),
     dxm_yaw     : degrees(dxm_y),
+    ddxm_roll   : ddxmr,
+    ddxm_pitch  : ddxmp,
+    ddxm_yaw    : ddxmy,
   };
   AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
 
-void Custom_Att_Controller::Log_CC1(float ah_r1, float ah_r2, float ah_p1,
-                                float ah_p2, float ah_y1, float ah_y2) const
+void Custom_Att_Controller::Log_CC1(float ah_r1, float ah_r2, float ah_p1, float ah_p2, float ah_y1, float ah_y2) const
 {
   struct log_CC1 pkt = {
     LOG_PACKET_HEADER_INIT(LOG_CC1_MSG),
@@ -163,21 +163,22 @@ void Custom_Att_Controller::step(float x_d[3], float dx[3], float x[3], float U[
   // Controller Outputs
   U[0] = -k2 * s_controller[0] + (ddxr_controller[0] * Block_State.ah[0] + dx[1] * dx[2] * Block_State.ah[1]);  
 
-  U[1] = -k3 * s_controller[1] + (ddxr_controller[1] * Block_State.ah[2] + dx[0] * dx[2] * Block_State.ah[3]);
+  U[1] = -k2 * s_controller[1] + (ddxr_controller[1] * Block_State.ah[2] + dx[0] * dx[2] * Block_State.ah[3]);
 
   U[2] = -k4 * s_controller[2] + (ddxr_controller[2] * Block_State.ah[4] + dx[0] * dx[1] * Block_State.ah[5]);
 
-  if(++log_div >= 8){
+  if(++log_div >= 40){
     log_div = 0;
     Log_CC0(U[0], U[1], U[2],
       Block_State.x_m[0], Block_State.x_m[1], Block_State.x_m[2],
-      Block_State.dx_m[0], Block_State.dx_m[1], Block_State.dx_m[2]);
+      Block_State.dx_m[0], Block_State.dx_m[1], Block_State.dx_m[2],
+      dxm[1], dxm[3], dxm[5]);
 
     Log_CC1(Block_State.ah[0], Block_State.ah[1],
       Block_State.ah[2], Block_State.ah[3],
       Block_State.ah[4], Block_State.ah[5]);
   }
-  
+
   // Adaptation Law
   dxr_adaptation[0] = Block_State.dx_m[0] - lambda_adaptation * error[0];
   s_adaptation[0] = dx[0] - dxr_adaptation[0];
@@ -192,15 +193,12 @@ void Custom_Att_Controller::step(float x_d[3], float dx[3], float x[3], float U[
   ddxr_adaptation[2] = (dxm[5] - lambda_adaptation * derror[2]);
 
   ah[0] = ((-(P1_gain*P1_11) * ddxr_adaptation[0] * s_adaptation[0] + -0.0F * s_adaptation[0] * dx[1] * dx[2]) - (sigma * Block_State.ah[0] + 0.0F * Block_State.ah[1])) * dt;
-
-  ah[2] = ((-(P2_gain*P2_11) * ddxr_adaptation[1] * s_adaptation[1] + -0.0F * s_adaptation[1] * dx[0] * dx[2]) - (sigma * Block_State.ah[2] + 0.0F * Block_State.ah[3])) * dt;
-
-  ah[4] = ((-(P3_gain*P3_11) * ddxr_adaptation[2] * s_adaptation[2] + -0.0F * s_adaptation[2] * dx[0] * dx[1]) - (sigma * Block_State.ah[4] + 0.0F * Block_State.ah[5])) * dt;
-  
   ah[1] = ((-0.0F * ddxr_adaptation[0] * s_adaptation[0] + -(P1_gain*P1_22) * s_adaptation[0] * dx[1] * dx[2]) - (0.0F * Block_State.ah[0] + sigma * Block_State.ah[1])) * dt;
 
+  ah[2] = ((-(P2_gain*P2_11) * ddxr_adaptation[1] * s_adaptation[1] + -0.0F * s_adaptation[1] * dx[0] * dx[2]) - (sigma * Block_State.ah[2] + 0.0F * Block_State.ah[3])) * dt;
   ah[3] = ((-0.0F * ddxr_adaptation[1] * s_adaptation[1] + -(P2_gain*P2_22) * s_adaptation[1] * dx[0] * dx[2]) - (0.0F * Block_State.ah[2] + sigma * Block_State.ah[3])) * dt;
 
+  ah[4] = ((-(P3_gain*P3_11) * ddxr_adaptation[2] * s_adaptation[2] + -0.0F * s_adaptation[2] * dx[0] * dx[1]) - (sigma * Block_State.ah[4] + 0.0F * Block_State.ah[5])) * dt;
   ah[5] = ((-0.0F * ddxr_adaptation[2] * s_adaptation[2] + -(P3_gain*P3_22) * s_adaptation[2] * dx[0] * dx[1]) - (0.0F * Block_State.ah[4] + sigma * Block_State.ah[5])) * dt;
 
   // Update for ah discrete integrator
@@ -241,30 +239,30 @@ void Custom_Att_Controller::initialize()
   }
 
   // Tuning parameters
-  l1 = 3.48F;
-  l2 = 5.65F;
+  l1 = 2.00F;
+  l2 = 2.00F;
   l3 = 1.48F;
-  l4 = 2.35F;
+  l4 = 1.48F;
 
-  lambda_controller = 4.76F;
-  k2 = 0.267F;
-  k3 = 0.267F;
+  lambda_controller = 1.77F;
+  k2 = 0.37F;
+  k3 = 0.37F;
   k4 = 0.135F;
 
-  lambda_adaptation = 0.06F;
-  P1_gain = 0.012F;
-  P1_11 = 0.75F;
+  lambda_adaptation = 1.2F;
+  P1_gain = 0.12F;
+  P1_11 = 0.55F;
   P1_22 = 0.15F;
 
-  P2_gain = 0.012F;
-  P2_11 = 0.75F;
+  P2_gain = 0.12F;
+  P2_11 = 0.55F;
   P2_22 = 0.15F;
 
   P3_gain = 0.012F;
   P3_11 = 0.25F;
-  P3_22 = 0.10F;
+  P3_22 = 0.15F;
 
-  sigma = 0.1F;
+  sigma = 0.9F;
 
   prev_yaw_ref = 0.0F;
   prev_yaw_real = 0.0F;

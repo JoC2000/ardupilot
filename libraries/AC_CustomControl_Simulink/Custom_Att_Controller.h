@@ -38,7 +38,8 @@ class Custom_Att_Controller final
 
   void Log_CC0(float u_roll, float u_pitch, float u_yaw, 
            float xm_r, float xm_p, float xm_y,
-           float dxm_r, float dxm_p, float dxm_y) const;
+           float dxm_r, float dxm_p, float dxm_y,
+           float ddxmr, float ddxmp, float ddxmy) const;
   
   void Log_CC1(float ah_r1, float ah_r2, float ah_p1, 
            float ah_p2, float ah_y1, float ah_y2) const;
