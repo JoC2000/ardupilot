@@ -42,7 +42,17 @@ class Custom_Att_Controller final
            float ddxmr, float ddxmp, float ddxmy) const;
   
   void Log_CC1(float ah_r1, float ah_r2, float ah_p1, 
-           float ah_p2, float ah_y1, float ah_y2) const;
+           float ah_p2, float ah_y1, float ah_y2, float roll_e, float pitch_e, float yaw_e) const;
+  
+  void Log_CC2(float dxr_roll, float dxr_pitch, float dxr_yaw, 
+               float ddxr_roll, float ddxr_pitch, float ddxr_yaw) const;
+
+  void Log_CC3(float dxr_roll, float dxr_pitch, float dxr_yaw, 
+               float ddxr_roll, float ddxr_pitch, float ddxr_yaw) const;
+  
+  void Log_CC4(float s_roll_c, float s_pitch_c, float s_yaw_c,
+               float s_roll_a, float s_pitch_a, float s_yaw_a) const;
+
   // Constructor
   Custom_Att_Controller();
 

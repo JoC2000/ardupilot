@@ -32,7 +32,7 @@ void Custom_Att_Controller::Log_CC0(float u_roll, float u_pitch, float u_yaw, fl
   AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
 
-void Custom_Att_Controller::Log_CC1(float ah_r1, float ah_r2, float ah_p1, float ah_p2, float ah_y1, float ah_y2) const
+void Custom_Att_Controller::Log_CC1(float ah_r1, float ah_r2, float ah_p1, float ah_p2, float ah_y1, float ah_y2, float roll_e, float pitch_e, float yaw_e) const
 {
   struct log_CC1 pkt = {
     LOG_PACKET_HEADER_INIT(LOG_CC1_MSG),
@@ -43,6 +43,54 @@ void Custom_Att_Controller::Log_CC1(float ah_r1, float ah_r2, float ah_p1, float
     ah_p2       : ah_p2,
     ah_y1       : ah_y1,
     ah_y2       : ah_y2,
+    roll_e      : degrees(roll_e),
+    pitch_e     : degrees(pitch_e),
+    yaw_e       : degrees(yaw_e),
+  };
+  AP::logger().WriteBlock(&pkt, sizeof(pkt));
+}
+
+void Custom_Att_Controller::Log_CC2(float dxr_roll, float dxr_pitch, float dxr_yaw, float ddxr_roll, float ddxr_pitch, float ddxr_yaw) const
+{
+  struct log_CC2 pkt = {
+    LOG_PACKET_HEADER_INIT(LOG_CC2_MSG),
+    time_us     : AP_HAL::micros64(),
+    dxr_roll_c  : degrees(dxr_roll),
+    dxr_pitch_c : degrees(dxr_pitch),
+    dxr_yaw_c   : degrees(dxr_yaw),
+    ddxr_roll_c : degrees(ddxr_roll),
+    ddxr_pitch_c: degrees(ddxr_pitch),
+    ddxr_yaw_c  : degrees(ddxr_yaw),
+  };
+  AP::logger().WriteBlock(&pkt, sizeof(pkt));
+}
+
+void Custom_Att_Controller::Log_CC3(float dxr_roll, float dxr_pitch, float dxr_yaw, float ddxr_roll, float ddxr_pitch, float ddxr_yaw) const
+{
+  struct log_CC3 pkt = {
+    LOG_PACKET_HEADER_INIT(LOG_CC3_MSG),
+    time_us     : AP_HAL::micros64(),
+    dxr_roll_a  : degrees(dxr_roll),
+    dxr_pitch_a : degrees(dxr_pitch),
+    dxr_yaw_a   : degrees(dxr_yaw),
+    ddxr_roll_a : degrees(ddxr_roll),
+    ddxr_pitch_a: degrees(ddxr_pitch),
+    ddxr_yaw_a  : degrees(ddxr_yaw),
+  };
+  AP::logger().WriteBlock(&pkt, sizeof(pkt));
+}
+
+void Custom_Att_Controller::Log_CC4(float s_roll_c, float s_pitch_c, float s_yaw_c, float s_roll_a, float s_pitch_a, float s_yaw_a) const
+{
+  struct log_CC4 pkt = {
+    LOG_PACKET_HEADER_INIT(LOG_CC4_MSG),
+    time_us     : AP_HAL::micros64(),
+    s_roll_c    : degrees(s_roll_c),
+    s_pitch_c   : degrees(s_pitch_c),
+    s_yaw_c     : degrees(s_yaw_c),
+    s_roll_a    : degrees(s_roll_a),
+    s_pitch_a   : degrees(s_pitch_a),
+    s_yaw_a     : degrees(s_yaw_a),
   };
   AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
@@ -167,18 +215,6 @@ void Custom_Att_Controller::step(float x_d[3], float dx[3], float x[3], float U[
 
   U[2] = -k4 * s_controller[2] + (ddxr_controller[2] * Block_State.ah[4] + dx[0] * dx[1] * Block_State.ah[5]);
 
-  if(++log_div >= 40){
-    log_div = 0;
-    Log_CC0(U[0], U[1], U[2],
-      Block_State.x_m[0], Block_State.x_m[1], Block_State.x_m[2],
-      Block_State.dx_m[0], Block_State.dx_m[1], Block_State.dx_m[2],
-      dxm[1], dxm[3], dxm[5]);
-
-    Log_CC1(Block_State.ah[0], Block_State.ah[1],
-      Block_State.ah[2], Block_State.ah[3],
-      Block_State.ah[4], Block_State.ah[5]);
-  }
-
   // Adaptation Law
   dxr_adaptation[0] = Block_State.dx_m[0] - lambda_adaptation * error[0];
   s_adaptation[0] = dx[0] - dxr_adaptation[0];
@@ -200,6 +236,28 @@ void Custom_Att_Controller::step(float x_d[3], float dx[3], float x[3], float U[
 
   ah[4] = ((-(P3_gain*P3_11) * ddxr_adaptation[2] * s_adaptation[2] + -0.0F * s_adaptation[2] * dx[0] * dx[1]) - (sigma * Block_State.ah[4] + 0.0F * Block_State.ah[5])) * dt;
   ah[5] = ((-0.0F * ddxr_adaptation[2] * s_adaptation[2] + -(P3_gain*P3_22) * s_adaptation[2] * dx[0] * dx[1]) - (0.0F * Block_State.ah[4] + sigma * Block_State.ah[5])) * dt;
+
+  if(++log_div >= 40){
+    log_div = 0;
+    Log_CC0(U[0], U[1], U[2],
+      Block_State.x_m[0], Block_State.x_m[1], Block_State.x_m[2],
+      Block_State.dx_m[0], Block_State.dx_m[1], Block_State.dx_m[2],
+      dxm[1], dxm[3], dxm[5]);
+
+    Log_CC1(Block_State.ah[0], Block_State.ah[1],
+      Block_State.ah[2], Block_State.ah[3],
+      Block_State.ah[4], Block_State.ah[5],
+      error[0], error[1], error[2]);
+
+    Log_CC2(dxr_controller[0], dxr_controller[1], dxr_controller[2],
+            ddxr_controller[0], ddxr_controller[1], ddxr_controller[2]);
+
+    Log_CC3(dxr_adaptation[0], dxr_adaptation[1], dxr_adaptation[2],
+            ddxr_adaptation[0], ddxr_adaptation[1], ddxr_adaptation[2]);
+
+    Log_CC4(s_controller[0], s_controller[1], s_controller[2], 
+            s_adaptation[0], s_adaptation[1], s_adaptation[2]);
+  }
 
   // Update for ah discrete integrator
   for (i = 0; i < 6; i++) {
@@ -239,10 +297,10 @@ void Custom_Att_Controller::initialize()
   }
 
   // Tuning parameters
-  l1 = 2.00F;
-  l2 = 2.00F;
+  l1 = 4.53F;
+  l2 = 5.65F;
   l3 = 1.48F;
-  l4 = 1.48F;
+  l4 = 2.35F;
 
   lambda_controller = 1.77F;
   k2 = 0.37F;
