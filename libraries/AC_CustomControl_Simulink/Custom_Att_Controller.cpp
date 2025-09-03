@@ -21,7 +21,7 @@ void Custom_Att_Controller::Log_CC0(float u_roll, float u_pitch, float u_yaw, fl
     u_yaw       : u_yaw,
     xm_roll     : degrees(xm_r),
     xm_pitch    : degrees(xm_p),
-    xm_yaw      : degrees(xm_y),
+    xm_yaw      : wrap_360(degrees(xm_y)),
     dxm_roll    : degrees(dxm_r),
     dxm_pitch   : degrees(dxm_p),
     dxm_yaw     : degrees(dxm_y),
@@ -58,9 +58,9 @@ void Custom_Att_Controller::Log_CC2(float dxr_roll, float dxr_pitch, float dxr_y
     dxr_roll_c  : degrees(dxr_roll),
     dxr_pitch_c : degrees(dxr_pitch),
     dxr_yaw_c   : degrees(dxr_yaw),
-    ddxr_roll_c : degrees(ddxr_roll),
-    ddxr_pitch_c: degrees(ddxr_pitch),
-    ddxr_yaw_c  : degrees(ddxr_yaw),
+    ddxr_roll_c : ddxr_roll*(180/M_PI),
+    ddxr_pitch_c: ddxr_pitch*(180/M_PI),
+    ddxr_yaw_c  : ddxr_yaw*(180/M_PI),
   };
   AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
@@ -73,9 +73,9 @@ void Custom_Att_Controller::Log_CC3(float dxr_roll, float dxr_pitch, float dxr_y
     dxr_roll_a  : degrees(dxr_roll),
     dxr_pitch_a : degrees(dxr_pitch),
     dxr_yaw_a   : degrees(dxr_yaw),
-    ddxr_roll_a : degrees(ddxr_roll),
-    ddxr_pitch_a: degrees(ddxr_pitch),
-    ddxr_yaw_a  : degrees(ddxr_yaw),
+    ddxr_roll_a : ddxr_roll*(180/M_PI),
+    ddxr_pitch_a: ddxr_pitch*(180/M_PI),
+    ddxr_yaw_a  : ddxr_yaw*(180/M_PI),
   };
   AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
@@ -299,28 +299,28 @@ void Custom_Att_Controller::initialize()
   // Tuning parameters
   l1 = 4.53F;
   l2 = 5.65F;
-  l3 = 1.48F;
-  l4 = 2.35F;
+  l3 = 2.48F;
+  l4 = 3.25F;
 
-  lambda_controller = 1.77F;
-  k2 = 0.37F;
-  k3 = 0.37F;
-  k4 = 0.135F;
+  lambda_controller = 2.31F;
+  k2 = 0.11F;
+  k3 = 0.11F;
+  k4 = 0.07F;
 
-  lambda_adaptation = 1.2F;
-  P1_gain = 0.12F;
-  P1_11 = 0.55F;
+  lambda_adaptation = 0.76F;
+  P1_gain = 0.08F;
+  P1_11 = 0.25F;
   P1_22 = 0.15F;
 
-  P2_gain = 0.12F;
-  P2_11 = 0.55F;
+  P2_gain = 0.08F;
+  P2_11 = 0.25F;
   P2_22 = 0.15F;
 
-  P3_gain = 0.012F;
+  P3_gain = 0.03F;
   P3_11 = 0.25F;
   P3_22 = 0.15F;
 
-  sigma = 0.9F;
+  sigma = 1.1F;
 
   prev_yaw_ref = 0.0F;
   prev_yaw_real = 0.0F;
