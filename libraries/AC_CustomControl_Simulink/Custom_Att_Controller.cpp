@@ -16,18 +16,18 @@ void Custom_Att_Controller::Log_CC0(float u_roll, float u_pitch, float u_yaw, fl
   struct log_CC0 pkt = {
     LOG_PACKET_HEADER_INIT(LOG_CC0_MSG),
     time_us     : AP_HAL::micros64(),
-    u_roll      : u_roll,
-    u_pitch     : u_pitch,
-    u_yaw       : u_yaw,
+    u_roll      : u_roll*(180/M_PI),
+    u_pitch     : u_pitch*(180/M_PI),
+    u_yaw       : u_yaw*(180/M_PI),
     xm_roll     : degrees(xm_r),
     xm_pitch    : degrees(xm_p),
     xm_yaw      : wrap_360(degrees(xm_y)),
     dxm_roll    : degrees(dxm_r),
     dxm_pitch   : degrees(dxm_p),
     dxm_yaw     : degrees(dxm_y),
-    ddxm_roll   : ddxmr,
-    ddxm_pitch  : ddxmp,
-    ddxm_yaw    : ddxmy,
+    ddxm_roll   : ddxmr*(180/M_PI),
+    ddxm_pitch  : ddxmp*(180/M_PI),
+    ddxm_yaw    : ddxmy*(180/M_PI),
   };
   AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
@@ -297,30 +297,30 @@ void Custom_Att_Controller::initialize()
   }
 
   // Tuning parameters
-  l1 = 4.53F;
-  l2 = 5.65F;
-  l3 = 2.48F;
-  l4 = 3.25F;
+  l1 = 23.83F;
+  l2 = 25.45F;
+  l3 = 17.48F;
+  l4 = 19.25F;
 
-  lambda_controller = 2.31F;
-  k2 = 0.11F;
-  k3 = 0.11F;
-  k4 = 0.07F;
+  lambda_controller = 1.5F;
+  k2 = 0.31F;
+  k3 = 0.31F;
+  k4 = 0.21F;
 
-  lambda_adaptation = 0.76F;
-  P1_gain = 0.08F;
-  P1_11 = 0.25F;
+  lambda_adaptation = 0.9F;
+  P1_gain = 0.10F;
+  P1_11 = 0.35F;
   P1_22 = 0.15F;
 
-  P2_gain = 0.08F;
-  P2_11 = 0.25F;
+  P2_gain = 0.1F;
+  P2_11 = 0.35F;
   P2_22 = 0.15F;
 
-  P3_gain = 0.03F;
+  P3_gain = 0.08F;
   P3_11 = 0.25F;
   P3_22 = 0.15F;
 
-  sigma = 1.1F;
+  sigma = 0.25F;
 
   prev_yaw_ref = 0.0F;
   prev_yaw_real = 0.0F;
