@@ -16,18 +16,18 @@ void Custom_Att_Controller::Log_CC0(float u_roll, float u_pitch, float u_yaw, fl
   struct log_CC0 pkt = {
     LOG_PACKET_HEADER_INIT(LOG_CC0_MSG),
     time_us     : AP_HAL::micros64(),
-    u_roll      : u_roll*(180/M_PI),
-    u_pitch     : u_pitch*(180/M_PI),
-    u_yaw       : u_yaw*(180/M_PI),
+    u_roll      : degrees(u_roll),
+    u_pitch     : degrees(u_pitch),
+    u_yaw       : degrees(u_yaw),
     xm_roll     : degrees(xm_r),
     xm_pitch    : degrees(xm_p),
     xm_yaw      : wrap_360(degrees(xm_y)),
     dxm_roll    : degrees(dxm_r),
     dxm_pitch   : degrees(dxm_p),
     dxm_yaw     : degrees(dxm_y),
-    ddxm_roll   : ddxmr*(180/M_PI),
-    ddxm_pitch  : ddxmp*(180/M_PI),
-    ddxm_yaw    : ddxmy*(180/M_PI),
+    ddxm_roll   : degrees(ddxmr),
+    ddxm_pitch  : degrees(ddxmp),
+    ddxm_yaw    : degrees(ddxmy),
   };
   AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
@@ -58,9 +58,9 @@ void Custom_Att_Controller::Log_CC2(float dxr_roll, float dxr_pitch, float dxr_y
     dxr_roll_c  : degrees(dxr_roll),
     dxr_pitch_c : degrees(dxr_pitch),
     dxr_yaw_c   : degrees(dxr_yaw),
-    ddxr_roll_c : ddxr_roll*(180/M_PI),
-    ddxr_pitch_c: ddxr_pitch*(180/M_PI),
-    ddxr_yaw_c  : ddxr_yaw*(180/M_PI),
+    ddxr_roll_c : degrees(ddxr_roll),
+    ddxr_pitch_c: degrees(ddxr_pitch),
+    ddxr_yaw_c  : degrees(ddxr_yaw)
   };
   AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
@@ -73,9 +73,9 @@ void Custom_Att_Controller::Log_CC3(float dxr_roll, float dxr_pitch, float dxr_y
     dxr_roll_a  : degrees(dxr_roll),
     dxr_pitch_a : degrees(dxr_pitch),
     dxr_yaw_a   : degrees(dxr_yaw),
-    ddxr_roll_a : ddxr_roll*(180/M_PI),
-    ddxr_pitch_a: ddxr_pitch*(180/M_PI),
-    ddxr_yaw_a  : ddxr_yaw*(180/M_PI),
+    ddxr_roll_a : degrees(ddxr_roll),
+    ddxr_pitch_a: degrees(ddxr_pitch),
+    ddxr_yaw_a  : degrees(ddxr_yaw),
   };
   AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
