@@ -1,14 +1,15 @@
 #include "Custom_Att_Controller.h"
 
-float Custom_Att_Controller::unwrap_angle(float prev, float current)
+float Custom_Att_Controller::unwrap_angle(float prev_unwrapped, float current)
 {
-  float diff = current - prev;
-  if (diff > M_PI) {
-    current -= 2.0f * M_PI;
-  } else if (diff < -M_PI) {
-    current += 2.0f * M_PI;
-  }
-  return current;
+  float diff = current - fmod(prev_unwrapped, 2.0f * M_PI);
+
+    // Bring diff into [-π, π]
+    while (diff > M_PI) diff -= 2.0f * M_PI;
+    while (diff < -M_PI) diff += 2.0f * M_PI;
+
+    // Accumulate
+    return prev_unwrapped + diff;
 }
 
 void Custom_Att_Controller::Log_CC0(float u_roll, float u_pitch, float u_yaw, float xm_r, float xm_p, float xm_y, float dxm_r, float dxm_p, float dxm_y, float ddxmr, float ddxmp, float ddxmy) const
@@ -237,7 +238,26 @@ void Custom_Att_Controller::step(float x_d[3], float dx[3], float x[3], float U[
   ah[4] = ((-(P3_gain*P3_11) * ddxr_adaptation[2] * s_adaptation[2] + -0.0F * s_adaptation[2] * dx[0] * dx[1]) - (sigma * Block_State.ah[4] + 0.0F * Block_State.ah[5])) * dt;
   ah[5] = ((-0.0F * ddxr_adaptation[2] * s_adaptation[2] + -(P3_gain*P3_22) * s_adaptation[2] * dx[0] * dx[1]) - (0.0F * Block_State.ah[4] + sigma * Block_State.ah[5])) * dt;
 
-  if(++log_div >= 40){
+  // Update for ah discrete integrator
+  for (i = 0; i < 6; i++) {
+    Block_State.ah[i] += ah[i];
+  }
+
+  // Update for x_m dicrete integrator
+
+  Block_State.x_m_IC_LOADING = 0U;
+  Block_State.x_m[0] = dt * dxm[0] + Block_State.x_m[0];
+  Block_State.x_m[1] = dt * dxm[2] + Block_State.x_m[1];
+  Block_State.x_m[2] = dt * dxm[4] + Block_State.x_m[2];
+
+  // Update for dx_m discrete integrator
+
+  Block_State.dx_m_integrator_IC_LOADING = 0U;
+  Block_State.dx_m[0] = dt * dxm[1] + Block_State.dx_m[0];
+  Block_State.dx_m[1] = dt * dxm[3] + Block_State.dx_m[1];
+  Block_State.dx_m[2] = dt * dxm[5] + Block_State.dx_m[2];
+
+  if(++log_div >= 5){
     log_div = 0;
     Log_CC0(U[0], U[1], U[2],
       Block_State.x_m[0], Block_State.x_m[1], Block_State.x_m[2],
@@ -259,24 +279,6 @@ void Custom_Att_Controller::step(float x_d[3], float dx[3], float x[3], float U[
             s_adaptation[0], s_adaptation[1], s_adaptation[2]);
   }
 
-  // Update for ah discrete integrator
-  for (i = 0; i < 6; i++) {
-    Block_State.ah[i] += ah[i];
-  }
-
-  // Update for x_m dicrete integrator
-
-  Block_State.x_m_IC_LOADING = 0U;
-  Block_State.x_m[0] = dt * dxm[0] + Block_State.x_m[0];
-  Block_State.x_m[1] = dt * dxm[2] + Block_State.x_m[1];
-  Block_State.x_m[2] = dt * dxm[4] + Block_State.x_m[2];
-
-  // Update for dx_m discrete integrator
-
-  Block_State.dx_m_integrator_IC_LOADING = 0U;
-  Block_State.dx_m[0] = dt * dxm[1] + Block_State.dx_m[0];
-  Block_State.dx_m[1] = dt * dxm[3] + Block_State.dx_m[1];
-  Block_State.dx_m[2] = dt * dxm[5] + Block_State.dx_m[2];
 }
 
 void Custom_Att_Controller::initialize()
