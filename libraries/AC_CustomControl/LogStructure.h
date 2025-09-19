@@ -12,17 +12,21 @@
 
 #if AP_CUSTOMCONTROL_ADAPTIVE_ENABLED
 
-// @LoggerMessage: CC_MRAC
-// @Description: Custom Control MRAC states
-// @Field: Uroll: Control output for roll
-// @Field: Upitch: Control output for pitch
-// @Field: Uyaw: Control output for yaw
-// @Field: Xmr: Model reference roll
-// @Field: Xmp: Model reference pitch
-// @Field: Xmy: Model reference yaw
-// @Field: Dxmr: Model reference roll rate
-// @Field: Dxmr: Model reference pitch rate
-// @Field: Dxmr: Model reference yaw rate
+// @LoggerMessage: CC0
+// @Description: Custom Controller Control Outputs and Reference Model States
+// @Field: TimeUS: Time since system startup
+// @Field: U_roll: Control output for roll
+// @Field: U_pitch: Control output for pitch
+// @Field: U_yaw: Control output for yaw
+// @Field: Xm_roll: Reference Model roll
+// @Field: Xm_pitch: Reference Model pitch
+// @Field: Xm_yaw: Reference Model yaw
+// @Field: Dxm_roll: Reference Model roll rate
+// @Field: Dxm_pitch: Reference Model pitch rate
+// @Field: Dxm_yaw: Reference Model yaw rate
+// @Field: Ddxm_roll: Reference Model Roll Acceleration
+// @Field: Ddxm_pitch: Reference Model Pitch Acceleration
+// @Field: Ddxm_yaw: Reference Model Yaw Acceleration
 
 struct PACKED log_CC0 {
     LOG_PACKET_HEADER;
@@ -41,6 +45,18 @@ struct PACKED log_CC0 {
     float ddxm_yaw;
 };
 
+// @LoggerMessage: CC1
+// @Description: Custom Controller Adaptive Mechanism Outputs and Error
+// @Field: TimeUS: Time since system startup
+// @Field: ah_R1: Adaptive param for acceleration compensation for roll
+// @Field: ah_R2: Adaptive param for decoupling effect for roll
+// @Field: ah_P1: Adaptive param for acceleration compensation for pitch
+// @Field: ah_P2: Adaptive param for decoupling effect for pitch
+// @Field: ah_Y1: Adaptive param for acceleration compensation for yaw
+// @Field: ah_Y1: Adaptive param for acceleration compensation for yaw
+// @Field: roll_e: Roll error
+// @Field: pitch_e: Pitch error
+// @Field: yaw_e: Yaw error
 struct PACKED log_CC1 {
     LOG_PACKET_HEADER;
     uint64_t time_us;
@@ -55,6 +71,15 @@ struct PACKED log_CC1 {
     float yaw_e;
 };
 
+// @LoggerMessage: CC2
+// @Description: Custom Controller Augmented Reference Velocity and Acceleration for the controller
+// @Field: TimeUS: Time since system startup
+// @Field: dxr_roll_controller: Augmented Reference Velocity Roll
+// @Field: dxr_pitch_controller: Augmented Reference Velocity Pitch
+// @Field: dxr_yaw_controller: Augmented Reference Velocity Yaw
+// @Field: ddxr_roll_controller: Augmented Reference Acceleration Roll
+// @Field: ddxr_pitch_controller: Augmented Reference Acceleration Pitch
+// @Field: ddxr_yaw_controller: Augmented Reference Acceleration Yaw
 struct PACKED log_CC2 {
     LOG_PACKET_HEADER;
     uint64_t time_us;
@@ -66,6 +91,15 @@ struct PACKED log_CC2 {
     float ddxr_yaw_c;
 };
 
+// @LoggerMessage: CC3
+// @Description: Custom Controller Augmented Reference Velocity and Acceleration for the adaptation mechanism
+// @Field: TimeUS: Time since system startup
+// @Field: dxr_roll_adaptation: Augmented Reference Velocity Roll
+// @Field: dxr_pitch_adaptation: Augmented Reference Velocity Pitch
+// @Field: dxr_yaw_adaptation: Augmented Reference Velocity Yaw
+// @Field: ddxr_roll_adaptation: Augmented Reference Acceleration Roll
+// @Field: ddxr_pitch_adaptation: Augmented Reference Acceleration Pitch
+// @Field: ddxr_yaw_adaptation: Augmented Reference Acceleration Yaw
 struct PACKED log_CC3 {
     LOG_PACKET_HEADER;
     uint64_t time_us;
@@ -77,6 +111,15 @@ struct PACKED log_CC3 {
     float ddxr_yaw_a;
 };
 
+// @LoggerMessage: CC4
+// @Description: Custom Controller Sliding Surface
+// @Field: TimeUS: Time since system startup
+// @Field: s_roll_controller: Sliding surface Roll
+// @Field: s_pitch_controller: Sliding surface Pitch
+// @Field: s_yaw_controller: Sliding surface Yaw
+// @Field: s_roll_adaptation: Sliding surface Roll
+// @Field: s_pitch_adaptation: Sliding surface Pitch
+// @Field: s_yaw_adaptation: Sliding surface Yaw
 struct PACKED log_CC4 {
     LOG_PACKET_HEADER;
     uint64_t time_us;
