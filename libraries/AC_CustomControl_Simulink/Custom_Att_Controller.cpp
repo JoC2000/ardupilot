@@ -132,13 +132,18 @@ void Custom_Att_Controller::step(float x_d[3], float dx[3], float x[3], float U[
   x[2] = unwrapped_yaw_real;
   Block_State.x_m[2] = unwrapped_yaw_model;
 
-  static const float b[18]{ 0.0F, l1*l2, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F,
-    0.0F, l1*l2, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, l3*l4 };
+  static const float b[18]
+  { 0.0F, l1*l2, 0.0F, 0.0F, 0.0F, 0.0F, 
+    0.0F, 0.0F, 0.0F, l1*l2, 0.0F, 0.0F, 
+    0.0F, 0.0F, 0.0F, 0.0F, 0.0F, l3*l4 };
 
-  static const float a[36]{ 0.0F, -(l1*l2), 0.0F, 0.0F, 0.0F, 0.0F, 1.0F,
-    -(l1+l2), 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -(l1*l2), 0.0F, 0.0F, 0.0F,
-    0.0F, 1.0F, -(l1+l2), 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -(l3*l4), 0.0F,
-    0.0F, 0.0F, 0.0F, 1.0F, -(l3+l4) };
+  static const float a[36]
+  { 0.0F, -(l1*l2), 0.0F, 0.0F, 0.0F, 0.0F, 
+    1.0F, -(l1+l2), 0.0F, 0.0F, 0.0F, 0.0F, 
+    0.0F, 0.0F, 0.0F, -(l1*l2), 0.0F, 0.0F,
+    0.0F, 0.0F, 1.0F, -(l1+l2), 0.0F, 0.0F, 
+    0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -(l3*l4),
+    0.0F, 0.0F, 0.0F, 0.0F, 1.0F, -(l3+l4) };
 
   // x_m discrete integrator initial values
 
@@ -299,10 +304,10 @@ void Custom_Att_Controller::initialize()
   }
 
   // Tuning parameters
-  l1 = 23.83F;
-  l2 = 25.45F;
-  l3 = 17.48F;
-  l4 = 19.25F;
+  l1 = 25.45F;
+  l2 = l1;
+  l3 = 19.25F;
+  l4 = l3;
 
   lambda_controller = 1.5F;
   k2 = 0.31F;
