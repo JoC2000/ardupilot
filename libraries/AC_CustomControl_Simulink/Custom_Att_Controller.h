@@ -65,7 +65,7 @@ class Custom_Att_Controller final
   DW_Custom_Att_Controller_T Block_State;
 
   // Tuning parameters
-  float l1,l2,l3,l4;
+  float l1,l2,l3;
 
   float lambda_controller;
   
