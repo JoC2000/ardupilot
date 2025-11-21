@@ -73,12 +73,12 @@ struct PACKED log_CC1 {
 // @LoggerMessage: CC2
 // @Description: Custom Controller Augmented Reference Velocity and Acceleration for the controller
 // @Field: TimeUS: Time since system startup
-// @Field: dxr_roll_controller: Augmented Reference Velocity Roll
-// @Field: dxr_pitch_controller: Augmented Reference Velocity Pitch
-// @Field: dxr_yaw_controller: Augmented Reference Velocity Yaw
-// @Field: ddxr_roll_controller: Augmented Reference Acceleration Roll
-// @Field: ddxr_pitch_controller: Augmented Reference Acceleration Pitch
-// @Field: ddxr_yaw_controller: Augmented Reference Acceleration Yaw
+// @Field: dxr_roll:    Augmented Reference Velocity Roll
+// @Field: dxr_pitch:   Augmented Reference Velocity Pitch
+// @Field: dxr_yaw:     Augmented Reference Velocity Yaw
+// @Field: ddxr_roll:   Augmented Reference Acceleration Roll
+// @Field: ddxr_pitch:  Augmented Reference Acceleration Pitch
+// @Field: ddxr_yaw:    Augmented Reference Acceleration Yaw
 struct PACKED log_CC2 {
     LOG_PACKET_HEADER;
     uint64_t time_us;
@@ -93,9 +93,9 @@ struct PACKED log_CC2 {
 // @LoggerMessage: CC3
 // @Description: Custom Controller Sliding Surface
 // @Field: TimeUS: Time since system startup
-// @Field: s_roll_controller: Sliding surface Roll
-// @Field: s_pitch_controller: Sliding surface Pitch
-// @Field: s_yaw_controller: Sliding surface Yaw
+// @Field: s_roll: Sliding surface Roll
+// @Field: s_pitch: Sliding surface Pitch
+// @Field: s_yaw: Sliding surface Yaw
 struct PACKED log_CC3 {
     LOG_PACKET_HEADER;
     uint64_t time_us;

@@ -180,18 +180,18 @@ void Custom_Att_Controller::step(float x_d[3], float dx[3], float x[3], float U[
   error[2] = x[2] - Block_State.x_m[2];
   derror[2] = dx[2] - Block_State.dx_m[2];
   
-  // Controller
+  // Sliding surface and xr variables
   dxr[0] = Block_State.dx_m[0] - lambda_s * error[0];
-  s[0] = dx[0] - dxr[0];
   ddxr[0] = dxm[1] - lambda_s * derror[0];
+  s[0] = dx[0] - dxr[0];
 
   dxr[1] = Block_State.dx_m[1] - lambda_s * error[1];
-  s[1] = dx[1] - dxr[1];
   ddxr[1] = dxm[3] - lambda_s * derror[1];
+  s[1] = dx[1] - dxr[1];
 
   dxr[2] = Block_State.dx_m[2] - lambda_s * error[2];
-  s[2] = dx[2] - dxr[2];
   ddxr[2] = dxm[5] - lambda_s * derror[2];
+  s[2] = dx[2] - dxr[2];
 
   // Controller Outputs
   U[0] = -k2 * s[0] + (ddxr[0] * Block_State.ah[0] + dx[1] * dx[2] * Block_State.ah[1]);  
