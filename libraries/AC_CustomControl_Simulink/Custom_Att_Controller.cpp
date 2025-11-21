@@ -66,32 +66,14 @@ void Custom_Att_Controller::Log_CC2(float dxr_roll, float dxr_pitch, float dxr_y
   AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
 
-void Custom_Att_Controller::Log_CC3(float dxr_roll, float dxr_pitch, float dxr_yaw, float ddxr_roll, float ddxr_pitch, float ddxr_yaw) const
+void Custom_Att_Controller::Log_CC3(float s_roll, float s_pitch, float s_yaw) const
 {
   struct log_CC3 pkt = {
     LOG_PACKET_HEADER_INIT(LOG_CC3_MSG),
     time_us     : AP_HAL::micros64(),
-    dxr_roll_a  : degrees(dxr_roll),
-    dxr_pitch_a : degrees(dxr_pitch),
-    dxr_yaw_a   : degrees(dxr_yaw),
-    ddxr_roll_a : degrees(ddxr_roll),
-    ddxr_pitch_a: degrees(ddxr_pitch),
-    ddxr_yaw_a  : degrees(ddxr_yaw),
-  };
-  AP::logger().WriteBlock(&pkt, sizeof(pkt));
-}
-
-void Custom_Att_Controller::Log_CC4(float s_roll_c, float s_pitch_c, float s_yaw_c, float s_roll_a, float s_pitch_a, float s_yaw_a) const
-{
-  struct log_CC4 pkt = {
-    LOG_PACKET_HEADER_INIT(LOG_CC4_MSG),
-    time_us     : AP_HAL::micros64(),
-    s_roll_c    : degrees(s_roll_c),
-    s_pitch_c   : degrees(s_pitch_c),
-    s_yaw_c     : degrees(s_yaw_c),
-    s_roll_a    : degrees(s_roll_a),
-    s_pitch_a   : degrees(s_pitch_a),
-    s_yaw_a     : degrees(s_yaw_a),
+    s_roll      : degrees(s_roll),
+    s_pitch     : degrees(s_pitch),
+    s_yaw       : degrees(s_yaw)
   };
   AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
@@ -107,12 +89,9 @@ void Custom_Att_Controller::step(float x_d[3], float dx[3], float x[3], float U[
   float ah[6];
   float error[3];
   float derror[3];
-  float dxr_adaptation[3];
-  float dxr_controller[3];
-  float ddxr_adaptation[3];
-  float ddxr_controller[3];
-  float s_adaptation[3];
-  float s_controller[3];
+  float dxr[3];
+  float ddxr[3];
+  float s[3];
   float temp;
 
   // Unwrap angles to avoid discontinuities
@@ -202,46 +181,34 @@ void Custom_Att_Controller::step(float x_d[3], float dx[3], float x[3], float U[
   derror[2] = dx[2] - Block_State.dx_m[2];
   
   // Controller
-  dxr_controller[0] = Block_State.dx_m[0] - lambda_controller * error[0];
-  s_controller[0] = dx[0] - dxr_controller[0];
-  ddxr_controller[0] = dxm[1] - lambda_controller * derror[0];
+  dxr[0] = Block_State.dx_m[0] - lambda_s * error[0];
+  s[0] = dx[0] - dxr[0];
+  ddxr[0] = dxm[1] - lambda_s * derror[0];
 
-  dxr_controller[1] = Block_State.dx_m[1] - lambda_controller * error[1];
-  s_controller[1] = dx[1] - dxr_controller[1];
-  ddxr_controller[1] = dxm[3] - lambda_controller * derror[1];
+  dxr[1] = Block_State.dx_m[1] - lambda_s * error[1];
+  s[1] = dx[1] - dxr[1];
+  ddxr[1] = dxm[3] - lambda_s * derror[1];
 
-  dxr_controller[2] = Block_State.dx_m[2] - lambda_controller * error[2];
-  s_controller[2] = dx[2] - dxr_controller[2];
-  ddxr_controller[2] = dxm[5] - lambda_controller * derror[2];
+  dxr[2] = Block_State.dx_m[2] - lambda_s * error[2];
+  s[2] = dx[2] - dxr[2];
+  ddxr[2] = dxm[5] - lambda_s * derror[2];
 
   // Controller Outputs
-  U[0] = -k2 * s_controller[0] + (ddxr_controller[0] * Block_State.ah[0] + dx[1] * dx[2] * Block_State.ah[1]);  
+  U[0] = -k2 * s[0] + (ddxr[0] * Block_State.ah[0] + dx[1] * dx[2] * Block_State.ah[1]);  
 
-  U[1] = -k2 * s_controller[1] + (ddxr_controller[1] * Block_State.ah[2] + dx[0] * dx[2] * Block_State.ah[3]);
+  U[1] = -k2 * s[1] + (ddxr[1] * Block_State.ah[2] + dx[0] * dx[2] * Block_State.ah[3]);
 
-  U[2] = -k4 * s_controller[2] + (ddxr_controller[2] * Block_State.ah[4] + dx[0] * dx[1] * Block_State.ah[5]);
+  U[2] = -k4 * s[2] + (ddxr[2] * Block_State.ah[4] + dx[0] * dx[1] * Block_State.ah[5]);
 
   // Adaptation Law
-  dxr_adaptation[0] = Block_State.dx_m[0] - lambda_adaptation * error[0];
-  s_adaptation[0] = dx[0] - dxr_adaptation[0];
-  ddxr_adaptation[0] = (dxm[1] - lambda_adaptation * derror[0]);
+  ah[0] = ((-(P1_gain*P1_11) * ddxr[0] * s[0] + -0.0F * s[0] * dx[1] * dx[2]) - (sigma * Block_State.ah[0] + 0.0F * Block_State.ah[1])) * dt;
+  ah[1] = ((-0.0F * ddxr[0] * s[0] + -(P1_gain*P1_22) * s[0] * dx[1] * dx[2]) - (0.0F * Block_State.ah[0] + sigma * Block_State.ah[1])) * dt;
 
-  dxr_adaptation[1] = Block_State.dx_m[1] - lambda_adaptation * error[1];
-  s_adaptation[1] = dx[1] - dxr_adaptation[1];
-  ddxr_adaptation[1] = (dxm[3] - lambda_adaptation * derror[1]);
-  
-  dxr_adaptation[2] = Block_State.dx_m[2] - lambda_adaptation * error[2];
-  s_adaptation[2] = dx[2] - dxr_adaptation[2];
-  ddxr_adaptation[2] = (dxm[5] - lambda_adaptation * derror[2]);
+  ah[2] = ((-(P2_gain*P2_11) * ddxr[1] * s[1] + -0.0F * s[1] * dx[0] * dx[2]) - (sigma * Block_State.ah[2] + 0.0F * Block_State.ah[3])) * dt;
+  ah[3] = ((-0.0F * ddxr[1] * s[1] + -(P2_gain*P2_22) * s[1] * dx[0] * dx[2]) - (0.0F * Block_State.ah[2] + sigma * Block_State.ah[3])) * dt;
 
-  ah[0] = ((-(P1_gain*P1_11) * ddxr_adaptation[0] * s_adaptation[0] + -0.0F * s_adaptation[0] * dx[1] * dx[2]) - (sigma * Block_State.ah[0] + 0.0F * Block_State.ah[1])) * dt;
-  ah[1] = ((-0.0F * ddxr_adaptation[0] * s_adaptation[0] + -(P1_gain*P1_22) * s_adaptation[0] * dx[1] * dx[2]) - (0.0F * Block_State.ah[0] + sigma * Block_State.ah[1])) * dt;
-
-  ah[2] = ((-(P2_gain*P2_11) * ddxr_adaptation[1] * s_adaptation[1] + -0.0F * s_adaptation[1] * dx[0] * dx[2]) - (sigma * Block_State.ah[2] + 0.0F * Block_State.ah[3])) * dt;
-  ah[3] = ((-0.0F * ddxr_adaptation[1] * s_adaptation[1] + -(P2_gain*P2_22) * s_adaptation[1] * dx[0] * dx[2]) - (0.0F * Block_State.ah[2] + sigma * Block_State.ah[3])) * dt;
-
-  ah[4] = ((-(P3_gain*P3_11) * ddxr_adaptation[2] * s_adaptation[2] + -0.0F * s_adaptation[2] * dx[0] * dx[1]) - (sigma * Block_State.ah[4] + 0.0F * Block_State.ah[5])) * dt;
-  ah[5] = ((-0.0F * ddxr_adaptation[2] * s_adaptation[2] + -(P3_gain*P3_22) * s_adaptation[2] * dx[0] * dx[1]) - (0.0F * Block_State.ah[4] + sigma * Block_State.ah[5])) * dt;
+  ah[4] = ((-(P3_gain*P3_11) * ddxr[2] * s[2] + -0.0F * s[2] * dx[0] * dx[1]) - (sigma * Block_State.ah[4] + 0.0F * Block_State.ah[5])) * dt;
+  ah[5] = ((-0.0F * ddxr[2] * s[2] + -(P3_gain*P3_22) * s[2] * dx[0] * dx[1]) - (0.0F * Block_State.ah[4] + sigma * Block_State.ah[5])) * dt;
 
   // Update for ah discrete integrator
   for (i = 0; i < 6; i++) {
@@ -274,14 +241,10 @@ void Custom_Att_Controller::step(float x_d[3], float dx[3], float x[3], float U[
       Block_State.ah[4], Block_State.ah[5],
       error[0], error[1], error[2]);
 
-    Log_CC2(dxr_controller[0], dxr_controller[1], dxr_controller[2],
-            ddxr_controller[0], ddxr_controller[1], ddxr_controller[2]);
+    Log_CC2(dxr[0], dxr[1], dxr[2],
+            ddxr[0], ddxr[1], ddxr[2]);
 
-    Log_CC3(dxr_adaptation[0], dxr_adaptation[1], dxr_adaptation[2],
-            ddxr_adaptation[0], ddxr_adaptation[1], ddxr_adaptation[2]);
-
-    Log_CC4(s_controller[0], s_controller[1], s_controller[2], 
-            s_adaptation[0], s_adaptation[1], s_adaptation[2]);
+    Log_CC3(s[0], s[1], s[2]);
   }
 
 }
@@ -308,17 +271,19 @@ void Custom_Att_Controller::initialize()
   l2 = 25.45F;
   l3 = 19.25F;
 
-  lambda_controller = 1.5F;
+  lambda_s = 1.5F;
+
+  // Controller gains
   k2 = 0.31F;
   k3 = 0.31F;
   k4 = 0.21F;
 
-  lambda_adaptation = 0.9F;
+  // Adaptation Law gains
   P1_gain = 0.10F;
   P1_11 = 0.35F;
   P1_22 = 0.15F;
 
-  P2_gain = 0.1F;
+  P2_gain = 0.10F;
   P2_11 = 0.35F;
   P2_22 = 0.15F;
 
@@ -326,8 +291,10 @@ void Custom_Att_Controller::initialize()
   P3_11 = 0.25F;
   P3_22 = 0.15F;
 
+  // Sigma modification gain
   sigma = 0.25F;
 
+  // Initial values
   prev_yaw_ref = 0.0F;
   prev_yaw_real = 0.0F;
   prev_yaw_model = 0.0F;

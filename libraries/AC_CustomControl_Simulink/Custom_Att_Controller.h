@@ -47,11 +47,7 @@ class Custom_Att_Controller final
   void Log_CC2(float dxr_roll, float dxr_pitch, float dxr_yaw, 
                float ddxr_roll, float ddxr_pitch, float ddxr_yaw) const;
 
-  void Log_CC3(float dxr_roll, float dxr_pitch, float dxr_yaw, 
-               float ddxr_roll, float ddxr_pitch, float ddxr_yaw) const;
-  
-  void Log_CC4(float s_roll_c, float s_pitch_c, float s_yaw_c,
-               float s_roll_a, float s_pitch_a, float s_yaw_a) const;
+  void Log_CC3(float s_roll_c, float s_pitch_c, float s_yaw_c) const;
 
   // Constructor
   Custom_Att_Controller();
@@ -67,11 +63,9 @@ class Custom_Att_Controller final
   // Tuning parameters
   float l1,l2,l3;
 
-  float lambda_controller;
-  
-  float k2,k3,k4;
+  float lambda_s;
 
-  float lambda_adaptation;
+  float k2,k3,k4;
 
   float P1_gain,P1_11,P1_22;
   
