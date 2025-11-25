@@ -67,11 +67,11 @@ class Custom_Att_Controller final
 
   float k2,k3,k4;
 
-  float P1_gain,P1_11,P1_22;
+  float P1_11,P1_22;
   
-  float P2_gain,P2_11,P2_22;
+  float P2_11,P2_22;
 
-  float P3_gain,P3_11,P3_22;
+  float P3_11,P3_22;
 
   float sigma;
 

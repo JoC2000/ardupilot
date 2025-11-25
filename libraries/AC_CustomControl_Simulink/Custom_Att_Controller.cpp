@@ -201,14 +201,14 @@ void Custom_Att_Controller::step(float x_d[3], float dx[3], float x[3], float U[
   U[2] = -k4 * s[2] + (ddxr[2] * Block_State.ah[4] + dx[0] * dx[1] * Block_State.ah[5]);
 
   // Adaptation Law
-  ah[0] = ((-(P1_gain*P1_11) * ddxr[0] * s[0] + -0.0F * s[0] * dx[1] * dx[2]) - (sigma * Block_State.ah[0] + 0.0F * Block_State.ah[1])) * dt;
-  ah[1] = ((-0.0F * ddxr[0] * s[0] + -(P1_gain*P1_22) * s[0] * dx[1] * dx[2]) - (0.0F * Block_State.ah[0] + sigma * Block_State.ah[1])) * dt;
+  ah[0] = ((-P1_11 * ddxr[0] * s[0] + -0.0F * s[0] * dx[1] * dx[2]) - (P1_11 * sigma * Block_State.ah[0] + 0.0F * Block_State.ah[1])) * dt;
+  ah[1] = ((-0.0F * ddxr[0] * s[0] + -P1_22 * s[0] * dx[1] * dx[2]) - (0.0F * Block_State.ah[0] + P1_22 * sigma * Block_State.ah[1])) * dt;
 
-  ah[2] = ((-(P2_gain*P2_11) * ddxr[1] * s[1] + -0.0F * s[1] * dx[0] * dx[2]) - (sigma * Block_State.ah[2] + 0.0F * Block_State.ah[3])) * dt;
-  ah[3] = ((-0.0F * ddxr[1] * s[1] + -(P2_gain*P2_22) * s[1] * dx[0] * dx[2]) - (0.0F * Block_State.ah[2] + sigma * Block_State.ah[3])) * dt;
+  ah[2] = ((-P2_11 * ddxr[1] * s[1] + -0.0F * s[1] * dx[0] * dx[2]) - (P2_11 * sigma * Block_State.ah[2] + 0.0F * Block_State.ah[3])) * dt;
+  ah[3] = ((-0.0F * ddxr[1] * s[1] + -P2_22 * s[1] * dx[0] * dx[2]) - (0.0F * Block_State.ah[2] + P2_22 * sigma * Block_State.ah[3])) * dt;
 
-  ah[4] = ((-(P3_gain*P3_11) * ddxr[2] * s[2] + -0.0F * s[2] * dx[0] * dx[1]) - (sigma * Block_State.ah[4] + 0.0F * Block_State.ah[5])) * dt;
-  ah[5] = ((-0.0F * ddxr[2] * s[2] + -(P3_gain*P3_22) * s[2] * dx[0] * dx[1]) - (0.0F * Block_State.ah[4] + sigma * Block_State.ah[5])) * dt;
+  ah[4] = ((-P3_11 * ddxr[2] * s[2] + -0.0F * s[2] * dx[0] * dx[1]) - (P3_11 * sigma * Block_State.ah[4] + 0.0F * Block_State.ah[5])) * dt;
+  ah[5] = ((-0.0F * ddxr[2] * s[2] + -P3_22 * s[2] * dx[0] * dx[1]) - (0.0F * Block_State.ah[4] + P3_22 * sigma * Block_State.ah[5])) * dt;
 
   // Update for ah discrete integrator
   for (i = 0; i < 6; i++) {
@@ -279,15 +279,12 @@ void Custom_Att_Controller::initialize()
   k4 = 0.21F;
 
   // Adaptation Law gains
-  P1_gain = 0.10F;
   P1_11 = 0.35F;
   P1_22 = 0.15F;
 
-  P2_gain = 0.10F;
   P2_11 = 0.35F;
   P2_22 = 0.15F;
 
-  P3_gain = 0.08F;
   P3_11 = 0.25F;
   P3_22 = 0.15F;
 
