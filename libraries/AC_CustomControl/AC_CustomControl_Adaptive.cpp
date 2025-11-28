@@ -12,19 +12,41 @@ const AP_Param::GroupInfo AC_CustomControl_Adaptive::var_info[] = {
     // @DisplayName: Adaptive param1
     // @Description: Dummy parameter for Adaptive custom controller backend
     // @User: Advanced
-    AP_GROUPINFO("PARAM1", 1, AC_CustomControl_Adaptive, param1, 0.0f),
+    AP_GROUPINFO("L_ROLL", 1, AC_CustomControl_Adaptive, lambda_rm, 25.45F),
 
     // @Param: PARAM2
     // @DisplayName: Adaptive param2
     // @Description: Dummy parameter for Adaptive custom controller backend
     // @User: Advanced
-    AP_GROUPINFO("PARAM2", 2, AC_CustomControl_Adaptive, param2, 0.0f),
+    AP_GROUPINFO("L_PITCH", 2, AC_CustomControl_Adaptive, lambda_pm, 25.45F),
 
     // @Param: PARAM3
     // @DisplayName: Adaptive param3
     // @Description: Dummy parameter for Adaptive custom controller backend
     // @User: Advanced
-    AP_GROUPINFO("PARAM3", 3, AC_CustomControl_Adaptive, param3, 0.0f),
+    AP_GROUPINFO("L_YAW", 3, AC_CustomControl_Adaptive, lambda_ym, 19.25F),
+
+    AP_GROUPINFO("L_SLIDING", 4, AC_CustomControl_Adaptive, lambda_s, 1.5F),
+
+    AP_GROUPINFO("K_ROLL", 5, AC_CustomControl_Adaptive, k1, 0.31F),
+
+    AP_GROUPINFO("K_PITCH", 6, AC_CustomControl_Adaptive, k2, 0.31F),
+
+    AP_GROUPINFO("K_YAW", 7, AC_CustomControl_Adaptive, k3, 0.21F),
+
+    AP_GROUPINFO("P11_ROLL", 8, AC_CustomControl_Adaptive, P1_11, 0.35F),
+
+    AP_GROUPINFO("P22_ROLL", 9, AC_CustomControl_Adaptive, P1_22, 0.15F),
+
+    AP_GROUPINFO("P11_PITCH", 10, AC_CustomControl_Adaptive, P2_11, 0.35F),
+
+    AP_GROUPINFO("P22_PITCH", 11, AC_CustomControl_Adaptive, P2_22, 0.15F),
+
+    AP_GROUPINFO("P11_YAW", 12, AC_CustomControl_Adaptive, P3_11, 0.25F),
+
+    AP_GROUPINFO("P22_YAW", 13, AC_CustomControl_Adaptive, P3_22, 0.15F),
+
+    AP_GROUPINFO("SIGMA", 14, AC_CustomControl_Adaptive, sigma, 0.25F),
 
     AP_GROUPEND
 };
@@ -83,7 +105,11 @@ Vector3f AC_CustomControl_Adaptive::update(void)
     // '<Root>/u_out'
     float U[3];
 
-    simulinkn_controller.step(x_d, dx, x, U, _dt);
+    float lambdas[4]{lambda_rm.get(), lambda_pm.get(), lambda_ym.get(), lambda_s.get()};
+    float k_gains[3]{k1.get(), k2.get(), k3.get()};
+    float p_gains[6]{P1_11.get(),P1_22.get(),P2_11.get(),P2_22.get(),P3_11.get(),P3_22.get()};
+
+    simulinkn_controller.step(x_d, dx, x, U, _dt, lambdas, k_gains, p_gains, sigma.get());
 
     // return what arducopter main controller outputted
     return Vector3f(U[0], U[1], U[2]);
