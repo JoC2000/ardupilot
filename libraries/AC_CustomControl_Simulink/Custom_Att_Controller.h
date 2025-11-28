@@ -31,7 +31,8 @@ class Custom_Att_Controller final
   void initialize();
 
   // Controller step function
-  void step(float x_d[3], float dx[3], float x[3], float U[3], float dt);
+  void step(float x_d[3], float dx[3], float x[3], float U[3], float dt,
+            float lambdas[4], float k_gains[3], float p_gains[6], float sigma);
 
   // Unwrap function
   float unwrap_angle(float prev, float current);
@@ -61,19 +62,19 @@ class Custom_Att_Controller final
   DW_Custom_Att_Controller_T Block_State;
 
   // Tuning parameters
-  float l1,l2,l3;
+  // float lambda_rm,lambda_pm,lambda_ym;
 
-  float lambda_s;
+  // float lambda_s;
 
-  float k2,k3,k4;
+  // float k1,k2,k3;
 
-  float P1_11,P1_22;
+  // float P1_11,P1_22;
   
-  float P2_11,P2_22;
+  // float P2_11,P2_22;
 
-  float P3_11,P3_22;
+  // float P3_11,P3_22;
 
-  float sigma;
+  // float sigma;
 
   float prev_yaw_ref,prev_yaw_real,prev_yaw_model;
 };

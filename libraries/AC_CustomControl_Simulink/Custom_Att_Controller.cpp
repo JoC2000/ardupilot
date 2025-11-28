@@ -80,7 +80,9 @@ void Custom_Att_Controller::Log_CC3(float s_roll, float s_pitch, float s_yaw) co
 
 uint8_t log_div = 0;
 
-void Custom_Att_Controller::step(float x_d[3], float dx[3], float x[3], float U[3], float dt)
+void Custom_Att_Controller::step(
+  float x_d[3], float dx[3], float x[3], float U[3], float dt,
+  float lambdas[4], float k_gains[3], float p_gains[6], float sigma)
 {
   int i;
   int i_0;
@@ -112,17 +114,17 @@ void Custom_Att_Controller::step(float x_d[3], float dx[3], float x[3], float U[
   Block_State.x_m[2] = unwrapped_yaw_model;
 
   static const float b[18]
-  { 0.0F, l1*l1, 0.0F, 0.0F, 0.0F, 0.0F, 
-    0.0F, 0.0F, 0.0F, l2*l2, 0.0F, 0.0F, 
-    0.0F, 0.0F, 0.0F, 0.0F, 0.0F, l3*l3 };
+  { 0.0F, lambdas[0]*lambdas[0], 0.0F, 0.0F, 0.0F, 0.0F, 
+    0.0F, 0.0F, 0.0F, lambdas[1]*lambdas[1], 0.0F, 0.0F, 
+    0.0F, 0.0F, 0.0F, 0.0F, 0.0F, lambdas[2]*lambdas[2] };
 
   static const float a[36]
-  { 0.0F, -(l1*l1), 0.0F, 0.0F, 0.0F, 0.0F, 
-    1.0F, -(l1+l1), 0.0F, 0.0F, 0.0F, 0.0F, 
-    0.0F, 0.0F, 0.0F, -(l2*l2), 0.0F, 0.0F,
-    0.0F, 0.0F, 1.0F, -(l2+l2), 0.0F, 0.0F, 
-    0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -(l3*l3),
-    0.0F, 0.0F, 0.0F, 0.0F, 1.0F, -(l3+l3) };
+  { 0.0F, -(lambdas[0]*lambdas[0]), 0.0F, 0.0F, 0.0F, 0.0F, 
+    1.0F, -(lambdas[0]+lambdas[0]), 0.0F, 0.0F, 0.0F, 0.0F, 
+    0.0F, 0.0F, 0.0F, -(lambdas[1]*lambdas[1]), 0.0F, 0.0F,
+    0.0F, 0.0F, 1.0F, -(lambdas[1]+lambdas[1]), 0.0F, 0.0F, 
+    0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -(lambdas[2]*lambdas[2]),
+    0.0F, 0.0F, 0.0F, 0.0F, 1.0F, -(lambdas[2]+lambdas[2]) };
 
   // x_m discrete integrator initial values
 
@@ -181,34 +183,34 @@ void Custom_Att_Controller::step(float x_d[3], float dx[3], float x[3], float U[
   derror[2] = dx[2] - Block_State.dx_m[2];
   
   // Sliding surface and xr variables
-  dxr[0] = Block_State.dx_m[0] - lambda_s * error[0];
-  ddxr[0] = dxm[1] - lambda_s * derror[0];
+  dxr[0] = Block_State.dx_m[0] - lambdas[3] * error[0];
+  ddxr[0] = dxm[1] - lambdas[3] * derror[0];
   s[0] = dx[0] - dxr[0];
 
-  dxr[1] = Block_State.dx_m[1] - lambda_s * error[1];
-  ddxr[1] = dxm[3] - lambda_s * derror[1];
+  dxr[1] = Block_State.dx_m[1] - lambdas[3] * error[1];
+  ddxr[1] = dxm[3] - lambdas[3] * derror[1];
   s[1] = dx[1] - dxr[1];
 
-  dxr[2] = Block_State.dx_m[2] - lambda_s * error[2];
-  ddxr[2] = dxm[5] - lambda_s * derror[2];
+  dxr[2] = Block_State.dx_m[2] - lambdas[3] * error[2];
+  ddxr[2] = dxm[5] - lambdas[3] * derror[2];
   s[2] = dx[2] - dxr[2];
 
   // Controller Outputs
-  U[0] = -k2 * s[0] + (ddxr[0] * Block_State.ah[0] + dx[1] * dx[2] * Block_State.ah[1]);  
+  U[0] = -k_gains[0] * s[0] + (ddxr[0] * Block_State.ah[0] + dx[1] * dx[2] * Block_State.ah[1]);  
 
-  U[1] = -k2 * s[1] + (ddxr[1] * Block_State.ah[2] + dx[0] * dx[2] * Block_State.ah[3]);
+  U[1] = -k_gains[1] * s[1] + (ddxr[1] * Block_State.ah[2] + dx[0] * dx[2] * Block_State.ah[3]);
 
-  U[2] = -k4 * s[2] + (ddxr[2] * Block_State.ah[4] + dx[0] * dx[1] * Block_State.ah[5]);
+  U[2] = -k_gains[2] * s[2] + (ddxr[2] * Block_State.ah[4] + dx[0] * dx[1] * Block_State.ah[5]);
 
   // Adaptation Law
-  ah[0] = ((-P1_11 * ddxr[0] * s[0] + -0.0F * s[0] * dx[1] * dx[2]) - (P1_11 * sigma * Block_State.ah[0] + 0.0F * Block_State.ah[1])) * dt;
-  ah[1] = ((-0.0F * ddxr[0] * s[0] + -P1_22 * s[0] * dx[1] * dx[2]) - (0.0F * Block_State.ah[0] + P1_22 * sigma * Block_State.ah[1])) * dt;
+  ah[0] = ((-p_gains[0] * ddxr[0] * s[0] + -0.0F * s[0] * dx[1] * dx[2]) - (p_gains[0] * sigma * Block_State.ah[0] + 0.0F * Block_State.ah[1])) * dt;
+  ah[1] = ((-0.0F * ddxr[0] * s[0] + -p_gains[1] * s[0] * dx[1] * dx[2]) - (0.0F * Block_State.ah[0] + p_gains[1] * sigma * Block_State.ah[1])) * dt;
 
-  ah[2] = ((-P2_11 * ddxr[1] * s[1] + -0.0F * s[1] * dx[0] * dx[2]) - (P2_11 * sigma * Block_State.ah[2] + 0.0F * Block_State.ah[3])) * dt;
-  ah[3] = ((-0.0F * ddxr[1] * s[1] + -P2_22 * s[1] * dx[0] * dx[2]) - (0.0F * Block_State.ah[2] + P2_22 * sigma * Block_State.ah[3])) * dt;
+  ah[2] = ((-p_gains[2] * ddxr[1] * s[1] + -0.0F * s[1] * dx[0] * dx[2]) - (p_gains[2] * sigma * Block_State.ah[2] + 0.0F * Block_State.ah[3])) * dt;
+  ah[3] = ((-0.0F * ddxr[1] * s[1] + -p_gains[3] * s[1] * dx[0] * dx[2]) - (0.0F * Block_State.ah[2] + p_gains[3] * sigma * Block_State.ah[3])) * dt;
 
-  ah[4] = ((-P3_11 * ddxr[2] * s[2] + -0.0F * s[2] * dx[0] * dx[1]) - (P3_11 * sigma * Block_State.ah[4] + 0.0F * Block_State.ah[5])) * dt;
-  ah[5] = ((-0.0F * ddxr[2] * s[2] + -P3_22 * s[2] * dx[0] * dx[1]) - (0.0F * Block_State.ah[4] + P3_22 * sigma * Block_State.ah[5])) * dt;
+  ah[4] = ((-p_gains[4] * ddxr[2] * s[2] + -0.0F * s[2] * dx[0] * dx[1]) - (p_gains[4] * sigma * Block_State.ah[4] + 0.0F * Block_State.ah[5])) * dt;
+  ah[5] = ((-0.0F * ddxr[2] * s[2] + -p_gains[5] * s[2] * dx[0] * dx[1]) - (0.0F * Block_State.ah[4] + p_gains[5] * sigma * Block_State.ah[5])) * dt;
 
   // Update for ah discrete integrator
   for (i = 0; i < 6; i++) {
@@ -267,29 +269,29 @@ void Custom_Att_Controller::initialize()
   }
 
   // Tuning parameters
-  l1 = 25.45F;
-  l2 = 25.45F;
-  l3 = 19.25F;
+  // lambda_rm = 25.45F;
+  // lambda_pm = 25.45F;
+  // lambda_ym = 19.25F;
 
-  lambda_s = 1.5F;
+  // lambda_s = 1.5F;
 
   // Controller gains
-  k2 = 0.31F;
-  k3 = 0.31F;
-  k4 = 0.21F;
+  // k1 = 0.31F;
+  // k2 = 0.31F;
+  // k3 = 0.21F;
 
   // Adaptation Law gains
-  P1_11 = 0.35F;
-  P1_22 = 0.15F;
+  // P1_11 = 0.35F;
+  // P1_22 = 0.15F;
 
-  P2_11 = 0.35F;
-  P2_22 = 0.15F;
+  // P2_11 = 0.35F;
+  // P2_22 = 0.15F;
 
-  P3_11 = 0.25F;
-  P3_22 = 0.15F;
+  // P3_11 = 0.25F;
+  // P3_22 = 0.15F;
 
   // Sigma modification gain
-  sigma = 0.25F;
+  // sigma = 0.25F;
 
   // Initial values
   prev_yaw_ref = 0.0F;
