@@ -8,44 +8,88 @@
 
 // table of user settable parameters
 const AP_Param::GroupInfo AC_CustomControl_Adaptive::var_info[] = {
-    // @Param: PARAM1
-    // @DisplayName: Adaptive param1
-    // @Description: Dummy parameter for Adaptive custom controller backend
+    // @Param: L_ROLL
+    // @DisplayName: L_ROLL
+    // @Description: Lambda gain for Roll Reference Model
     // @User: Advanced
     AP_GROUPINFO("L_ROLL", 1, AC_CustomControl_Adaptive, lambda_rm, 25.45F),
 
-    // @Param: PARAM2
-    // @DisplayName: Adaptive param2
-    // @Description: Dummy parameter for Adaptive custom controller backend
+    // @Param: L_PITCH
+    // @DisplayName: L_PITCH
+    // @Description: Lambda gain for Pitch Reference Model
     // @User: Advanced
     AP_GROUPINFO("L_PITCH", 2, AC_CustomControl_Adaptive, lambda_pm, 25.45F),
 
-    // @Param: PARAM3
-    // @DisplayName: Adaptive param3
-    // @Description: Dummy parameter for Adaptive custom controller backend
+    // @Param: L_YAW
+    // @DisplayName: L_YAW
+    // @Description: Lambda gain for Yaw Reference Model
     // @User: Advanced
     AP_GROUPINFO("L_YAW", 3, AC_CustomControl_Adaptive, lambda_ym, 19.25F),
 
+    // @Param: L_SLIDING
+    // @DisplayName: L_SLIDING
+    // @Description: Lambda gain for the sliding surface for error tracking
+    // @User: Advanced
     AP_GROUPINFO("L_SLIDING", 4, AC_CustomControl_Adaptive, lambda_s, 1.5F),
 
+    // @Param: K_ROLL
+    // @DisplayName: K_ROLL
+    // @Description: K gain for Roll controller
+    // @User: Advanced
     AP_GROUPINFO("K_ROLL", 5, AC_CustomControl_Adaptive, k1, 0.31F),
 
+    // @Param: K_PITCH
+    // @DisplayName: K_PITCH
+    // @Description: K gain for Pitch controller
+    // @User: Advanced
     AP_GROUPINFO("K_PITCH", 6, AC_CustomControl_Adaptive, k2, 0.31F),
 
+    // @Param: K_YAW
+    // @DisplayName: K_YAW
+    // @Description: K gain for Yaw controller
+    // @User: Advanced
     AP_GROUPINFO("K_YAW", 7, AC_CustomControl_Adaptive, k3, 0.21F),
 
+    // @Param: P11_ROLL
+    // @DisplayName: P11_ROLL
+    // @Description: P1 roll adaptive gain
+    // @User: Advanced
     AP_GROUPINFO("P11_ROLL", 8, AC_CustomControl_Adaptive, P1_11, 0.35F),
 
+    // @Param: P22_ROLL
+    // @DisplayName: P22_ROLL
+    // @Description: P2 roll adaptive gain
+    // @User: Advanced
     AP_GROUPINFO("P22_ROLL", 9, AC_CustomControl_Adaptive, P1_22, 0.15F),
 
+    // @Param: P11_PITCH
+    // @DisplayName: P11_PITCH
+    // @Description: P1 pitch adaptive gain
+    // @User: Advanced
     AP_GROUPINFO("P11_PITCH", 10, AC_CustomControl_Adaptive, P2_11, 0.35F),
 
+    // @Param: P22_PITCH
+    // @DisplayName: P22_PITCH
+    // @Description: P2 pitch adaptive gain
+    // @User: Advanced
     AP_GROUPINFO("P22_PITCH", 11, AC_CustomControl_Adaptive, P2_22, 0.15F),
 
+    // @Param: P11_YAW
+    // @DisplayName: P11_YAW
+    // @Description: P1 yaw adaptive gain
+    // @User: Advanced
     AP_GROUPINFO("P11_YAW", 12, AC_CustomControl_Adaptive, P3_11, 0.25F),
 
+    // @Param: P22_YAW
+    // @DisplayName: P22_YAW
+    // @Description: P2 yaw adaptive gain
+    // @User: Advanced
     AP_GROUPINFO("P22_YAW", 13, AC_CustomControl_Adaptive, P3_22, 0.15F),
 
+    // @Param: SIGMA
+    // @DisplayName: SIGMA
+    // @Description: Gain for sigma modification rule
+    // @User: Advanced
     AP_GROUPINFO("SIGMA", 14, AC_CustomControl_Adaptive, sigma, 0.25F),
 
     AP_GROUPEND
