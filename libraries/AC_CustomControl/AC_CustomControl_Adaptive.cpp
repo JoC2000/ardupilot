@@ -12,19 +12,19 @@ const AP_Param::GroupInfo AC_CustomControl_Adaptive::var_info[] = {
     // @DisplayName: L_ROLL
     // @Description: Lambda gain for Roll Reference Model
     // @User: Advanced
-    AP_GROUPINFO("L_ROLL", 1, AC_CustomControl_Adaptive, lambda_rm, 25.45F),
+    AP_GROUPINFO("L_ROLL", 1, AC_CustomControl_Adaptive, lambda_rm, 30.15F),
 
     // @Param: L_PITCH
     // @DisplayName: L_PITCH
     // @Description: Lambda gain for Pitch Reference Model
     // @User: Advanced
-    AP_GROUPINFO("L_PITCH", 2, AC_CustomControl_Adaptive, lambda_pm, 25.45F),
+    AP_GROUPINFO("L_PITCH", 2, AC_CustomControl_Adaptive, lambda_pm, 30.15F),
 
     // @Param: L_YAW
     // @DisplayName: L_YAW
     // @Description: Lambda gain for Yaw Reference Model
     // @User: Advanced
-    AP_GROUPINFO("L_YAW", 3, AC_CustomControl_Adaptive, lambda_ym, 19.25F),
+    AP_GROUPINFO("L_YAW", 3, AC_CustomControl_Adaptive, lambda_ym, 25.25F),
 
     // @Param: L_SLIDING
     // @DisplayName: L_SLIDING
@@ -54,7 +54,7 @@ const AP_Param::GroupInfo AC_CustomControl_Adaptive::var_info[] = {
     // @DisplayName: P11_ROLL
     // @Description: P1 roll adaptive gain
     // @User: Advanced
-    AP_GROUPINFO("P11_ROLL", 8, AC_CustomControl_Adaptive, P1_11, 0.35F),
+    AP_GROUPINFO("P11_ROLL", 8, AC_CustomControl_Adaptive, P1_11, 0.20F),
 
     // @Param: P22_ROLL
     // @DisplayName: P22_ROLL
@@ -66,7 +66,7 @@ const AP_Param::GroupInfo AC_CustomControl_Adaptive::var_info[] = {
     // @DisplayName: P11_PITCH
     // @Description: P1 pitch adaptive gain
     // @User: Advanced
-    AP_GROUPINFO("P11_PITCH", 10, AC_CustomControl_Adaptive, P2_11, 0.35F),
+    AP_GROUPINFO("P11_PITCH", 10, AC_CustomControl_Adaptive, P2_11, 0.15F),
 
     // @Param: P22_PITCH
     // @DisplayName: P22_PITCH
@@ -78,13 +78,13 @@ const AP_Param::GroupInfo AC_CustomControl_Adaptive::var_info[] = {
     // @DisplayName: P11_YAW
     // @Description: P1 yaw adaptive gain
     // @User: Advanced
-    AP_GROUPINFO("P11_YAW", 12, AC_CustomControl_Adaptive, P3_11, 0.25F),
+    AP_GROUPINFO("P11_YAW", 12, AC_CustomControl_Adaptive, P3_11, 0.10F),
 
     // @Param: P22_YAW
     // @DisplayName: P22_YAW
     // @Description: P2 yaw adaptive gain
     // @User: Advanced
-    AP_GROUPINFO("P22_YAW", 13, AC_CustomControl_Adaptive, P3_22, 0.15F),
+    AP_GROUPINFO("P22_YAW", 13, AC_CustomControl_Adaptive, P3_22, 0.10F),
 
     // @Param: SIGMA
     // @DisplayName: SIGMA
