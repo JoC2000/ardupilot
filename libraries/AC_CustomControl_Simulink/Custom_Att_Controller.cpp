@@ -82,14 +82,14 @@ uint8_t log_div = 0;
 
 void Custom_Att_Controller::step(
   float x_d[3], float dx[3], float x[3], float U[3], float dt,
-  float lambdas[4], float k_gains[3], float p_gains[6], float sigma)
+  float lambdas[4], float k_gains[3], float p_gains[6], float sigma, float errors[3])
 {
   int i;
   int i_0;
   float xm[6];
   float dxm[6];
   float ah[6];
-  float error[3];
+  // float error[3];
   float derror[3];
   float dxr[3];
   float ddxr[3];
@@ -113,12 +113,12 @@ void Custom_Att_Controller::step(
   x[2] = unwrapped_yaw_real;
   Block_State.x_m[2] = unwrapped_yaw_model;
 
-  static const float b[18]
+  const float b[18]
   { 0.0F, lambdas[0]*lambdas[0], 0.0F, 0.0F, 0.0F, 0.0F, 
     0.0F, 0.0F, 0.0F, lambdas[1]*lambdas[1], 0.0F, 0.0F, 
     0.0F, 0.0F, 0.0F, 0.0F, 0.0F, lambdas[2]*lambdas[2] };
 
-  static const float a[36]
+  const float a[36]
   { 0.0F, -(lambdas[0]*lambdas[0]), 0.0F, 0.0F, 0.0F, 0.0F, 
     1.0F, -(lambdas[0]+lambdas[0]), 0.0F, 0.0F, 0.0F, 0.0F, 
     0.0F, 0.0F, 0.0F, -(lambdas[1]*lambdas[1]), 0.0F, 0.0F,
@@ -173,13 +173,13 @@ void Custom_Att_Controller::step(
   */
 
   // Error definitions
-  error[0] = x[0] - Block_State.x_m[0];
+  // error[0] = x[0] - Block_State.x_m[0];
   derror[0] = dx[0] - Block_State.dx_m[0];
 
-  error[1] = x[1] - Block_State.x_m[1];
+  // error[1] = x[1] - Block_State.x_m[1];
   derror[1] = dx[1] - Block_State.dx_m[1];
 
-  error[2] = x[2] - Block_State.x_m[2];
+  // error[2] = x[2] - Block_State.x_m[2];
   derror[2] = dx[2] - Block_State.dx_m[2];
   
   // Sliding surface and xr variables

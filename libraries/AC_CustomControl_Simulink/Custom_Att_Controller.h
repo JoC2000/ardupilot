@@ -32,7 +32,7 @@ class Custom_Att_Controller final
 
   // Controller step function
   void step(float x_d[3], float dx[3], float x[3], float U[3], float dt,
-            float lambdas[4], float k_gains[3], float p_gains[6], float sigma);
+            float lambdas[4], float k_gains[3], float p_gains[6], float sigma, float errors[3]);
 
   // Unwrap function
   float unwrap_angle(float prev, float current);
