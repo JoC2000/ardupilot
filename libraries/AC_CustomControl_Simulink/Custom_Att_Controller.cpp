@@ -81,7 +81,7 @@ void Custom_Att_Controller::Log_CC3(float s_roll, float s_pitch, float s_yaw) co
 uint8_t log_div = 0;
 
 void Custom_Att_Controller::step(
-  float x_d[3], float dx[3], float x[3], float U[3], float dt,
+  float x_d[3], float dx[3], float U[3], float dt,
   float lambdas[4], float k_gains[3], float p_gains[6], float sigma, float errors[3])
 {
   int i;
