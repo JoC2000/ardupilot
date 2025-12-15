@@ -1,17 +1,5 @@
 #include "Custom_Att_Controller.h"
 
-float Custom_Att_Controller::unwrap_angle(float prev_unwrapped, float current)
-{
-  float diff = current - fmod(prev_unwrapped, 2.0f * M_PI);
-
-    // Bring diff into [-π, π]
-    while (diff > M_PI) diff -= 2.0f * M_PI;
-    while (diff < -M_PI) diff += 2.0f * M_PI;
-
-    // Accumulate
-    return prev_unwrapped + diff;
-}
-
 void Custom_Att_Controller::Log_CC0(float u_roll, float u_pitch, float u_yaw, float xm_r, float xm_p, float xm_y, float dxm_r, float dxm_p, float dxm_y, float ddxmr, float ddxmp, float ddxmy) const
 {
   struct log_CC0 pkt = {
@@ -81,37 +69,19 @@ void Custom_Att_Controller::Log_CC3(float s_roll, float s_pitch, float s_yaw) co
 uint8_t log_div = 0;
 
 void Custom_Att_Controller::step(
-  float x_d[3], float dx[3], float U[3], float dt,
-  float lambdas[4], float k_gains[3], float p_gains[6], float sigma, float errors[3])
+  float dx_d[3], float dx[3], float U[3], float errors[3], float dt,
+  float lambdas[4], float k_gains[3], float p_gains[6], float sigma)
 {
   int i;
   int i_0;
   float xm[6];
   float dxm[6];
   float ah[6];
-  // float error[3];
   float derror[3];
   float dxr[3];
   float ddxr[3];
   float s[3];
   float temp;
-
-  // Unwrap angles to avoid discontinuities
-  float raw_yaw_ref = x_d[2];
-  float raw_yaw_real = x[2];
-  float raw_yaw_model = Block_State.x_m[2];
-
-  float unwrapped_yaw_ref = unwrap_angle(prev_yaw_ref, raw_yaw_ref);
-  float unwrapped_yaw_real = unwrap_angle(prev_yaw_real, raw_yaw_real);
-  float unwrapped_yaw_model = unwrap_angle(prev_yaw_model, raw_yaw_model);  
-  
-  prev_yaw_ref = unwrapped_yaw_ref;
-  prev_yaw_real = unwrapped_yaw_real;
-  prev_yaw_model = unwrapped_yaw_model;
-
-  x_d[2] = unwrapped_yaw_ref;
-  x[2] = unwrapped_yaw_real;
-  Block_State.x_m[2] = unwrapped_yaw_model;
 
   const float b[18]
   { 0.0F, lambdas[0]*lambdas[0], 0.0F, 0.0F, 0.0F, 0.0F, 
@@ -129,20 +99,20 @@ void Custom_Att_Controller::step(
   // x_m discrete integrator initial values
 
   if (Block_State.x_m_IC_LOADING != 0) {
-    Block_State.x_m[0] = x[0];
-    Block_State.x_m[1] = x[1];
-    Block_State.x_m[2] = x[2];
+    Block_State.x_m[0] = dx[0];
+    Block_State.x_m[1] = dx[1];
+    Block_State.x_m[2] = dx[2];
   }
 
   // dx_m discrete integrator initial values
 
   if (Block_State.dx_m_integrator_IC_LOADING != 0) {
-    Block_State.dx_m[0] = dx[0];
-    Block_State.dx_m[1] = dx[1];
-    Block_State.dx_m[2] = dx[2];
+    Block_State.dx_m[0] = 0;
+    Block_State.dx_m[1] = 0;
+    Block_State.dx_m[2] = 0;
   }
 
-  // Model Reference
+  // Reference Model
   xm[0] = Block_State.x_m[0];
   xm[1] = Block_State.dx_m[0];
   xm[2] = Block_State.x_m[1];
@@ -156,7 +126,7 @@ void Custom_Att_Controller::step(
       temp += a[6 * i_0 + i] * xm[i_0];
     }
 
-    dxm[i] = ((b[i + 6] * x_d[1] + b[i] * x_d[0]) + b[i + 12] * x_d[2]) + temp;
+    dxm[i] = ((b[i + 6] * dx_d[1] + b[i] * dx_d[0]) + b[i + 12] * dx_d[2]) + temp;
   }
   /*
   Model Reference outputs in State Space form:
@@ -164,35 +134,41 @@ void Custom_Att_Controller::step(
   dx_m = A*xm + B*x_d
 
   where:
-  dx_m = [roll,
-          droll, 
-          pitch, 
-          dpitch,
-          yaw,
-          dyaw]
+
+  dx_d = Desired body rates
+  
+  Based in body rates
+  being p,q,r body rates
+
+  dx_m = [pdot,
+          pddot, 
+          qdot, 
+          qddot,
+          rdot,
+          rddot]
   */
 
   // Error definitions
   // error[0] = x[0] - Block_State.x_m[0];
-  derror[0] = dx[0] - Block_State.dx_m[0];
+  derror[0] = dx[0] - Block_State.x_m[0];
 
   // error[1] = x[1] - Block_State.x_m[1];
-  derror[1] = dx[1] - Block_State.dx_m[1];
+  derror[1] = dx[1] - Block_State.x_m[1];
 
   // error[2] = x[2] - Block_State.x_m[2];
-  derror[2] = dx[2] - Block_State.dx_m[2];
+  derror[2] = dx[2] - Block_State.x_m[2];
   
   // Sliding surface and xr variables
-  dxr[0] = Block_State.dx_m[0] - lambdas[3] * errors[0];
-  ddxr[0] = dxm[1] - lambdas[3] * derror[0];
+  dxr[0] = Block_State.x_m[0] - lambdas[3] * errors[0];
+  ddxr[0] = Block_State.dx_m[0] - lambdas[3] * derror[0];
   s[0] = dx[0] - dxr[0];
 
-  dxr[1] = Block_State.dx_m[1] - lambdas[3] * errors[1];
-  ddxr[1] = dxm[3] - lambdas[3] * derror[1];
+  dxr[1] = Block_State.x_m[1] - lambdas[3] * errors[1];
+  ddxr[1] = Block_State.dx_m[1] - lambdas[3] * derror[1];
   s[1] = dx[1] - dxr[1];
 
-  dxr[2] = Block_State.dx_m[2] - lambdas[3] * errors[2];
-  ddxr[2] = dxm[5] - lambdas[3] * derror[2];
+  dxr[2] = Block_State.x_m[2] - lambdas[3] * errors[2];
+  ddxr[2] = Block_State.dx_m[2] - lambdas[3] * derror[2];
   s[2] = dx[2] - dxr[2];
 
   // Controller Outputs

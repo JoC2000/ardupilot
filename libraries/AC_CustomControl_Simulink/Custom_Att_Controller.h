@@ -31,11 +31,8 @@ class Custom_Att_Controller final
   void initialize();
 
   // Controller step function
-  void step(float x_d[3], float dx[3], float U[3], float dt,
-            float lambdas[4], float k_gains[3], float p_gains[6], float sigma, float errors[3]);
-
-  // Unwrap function
-  float unwrap_angle(float prev, float current);
+  void step(float dx_d[3], float dx[3], float U[3], float errors[3], float dt,
+            float lambdas[4], float k_gains[3], float p_gains[6], float sigma);
 
   void Log_CC0(float u_roll, float u_pitch, float u_yaw, 
            float xm_r, float xm_p, float xm_y,
