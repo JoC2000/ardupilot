@@ -151,7 +151,7 @@ Vector3f AC_CustomControl_Adaptive::update(void)
     target_rate[2] = 1.0F * attitude_error.z + ang_vel_body_feedforward[2];
     
     // '<Root>/x_reference'
-    float x_d[3]{target_rate[0], target_rate[1], target_rate[2]};
+    float dx_d[3]{target_rate[0], target_rate[1], target_rate[2]};
 
     float U[3];
 
@@ -163,7 +163,7 @@ Vector3f AC_CustomControl_Adaptive::update(void)
     Vector3f gyro_latest = _ahrs->get_gyro_latest();
     float dx[3]{gyro_latest.x, gyro_latest.y, gyro_latest.z};
 
-    simulinkn_controller.step(x_d, dx, U, _dt, lambdas, k_gains, p_gains, sigma.get(), errors);
+    simulinkn_controller.step(dx_d, dx, U, errors, _dt, lambdas, k_gains, p_gains, sigma.get());
 
     // return what arducopter main controller outputted
     return Vector3f(U[0], U[1], U[2]);
