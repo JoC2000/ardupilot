@@ -146,9 +146,9 @@ Vector3f AC_CustomControl_Adaptive::update(void)
     Vector3f ang_vel_body_feedforward = rotation_target_to_body * _att_control->get_attitude_target_ang_vel();
 
     Vector3f target_rate;
-    target_rate[0] = 1.0F * attitude_error.x + ang_vel_body_feedforward[0];
-    target_rate[1] = 1.0F * attitude_error.y + ang_vel_body_feedforward[1];
-    target_rate[2] = 1.0F * attitude_error.z + ang_vel_body_feedforward[2];
+    target_rate[0] = ang_vel_body_feedforward[0];
+    target_rate[1] = ang_vel_body_feedforward[1];
+    target_rate[2] = ang_vel_body_feedforward[2];
     
     // '<Root>/x_reference'
     float dx_d[3]{target_rate[0], target_rate[1], target_rate[2]};
@@ -158,7 +158,7 @@ Vector3f AC_CustomControl_Adaptive::update(void)
     float lambdas[4]{lambda_rm.get(), lambda_pm.get(), lambda_ym.get(), lambda_s.get()};
     float k_gains[3]{k1.get(), k2.get(), k3.get()};
     float p_gains[6]{P1_11.get(),P1_22.get(),P2_11.get(),P2_22.get(),P3_11.get(),P3_22.get()};
-    float errors[3]{attitude_error.x, attitude_error.y, attitude_error.z};
+    float errors[3]{-attitude_error.x, -attitude_error.y, -attitude_error.z};
 
     Vector3f gyro_latest = _ahrs->get_gyro_latest();
     float dx[3]{gyro_latest.x, gyro_latest.y, gyro_latest.z};
