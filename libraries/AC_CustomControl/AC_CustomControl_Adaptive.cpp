@@ -135,27 +135,24 @@ Vector3f AC_CustomControl_Adaptive::update(void)
     _ahrs->get_quat_body_to_ned(attitude_body);
 
     attitude_target = _att_control->get_attitude_target_quat();
-    Vector3f gyro_latest = _ahrs->get_gyro_latest();
+    
 
     Vector3f attitude_error;
     float _thrust_angle, _thrust_error_angle;
     _att_control->thrust_heading_rotation_angles(attitude_target, attitude_body, attitude_error, 
                                                  _thrust_angle, _thrust_error_angle);
 
-    Vector3f att_target,att_body;
-    attitude_target.to_axis_angle(att_target);
-    attitude_body.to_axis_angle(att_body);
+    Quaternion rotation_target_to_body = attitude_body.inverse() * attitude_target;
+    Vector3f ang_vel_body_feedforward = rotation_target_to_body * _att_control->get_attitude_target_ang_vel();
 
+    Vector3f target_rate;
+    target_rate[0] = 1.0F * attitude_error.x + ang_vel_body_feedforward[0];
+    target_rate[1] = 1.0F * attitude_error.y + ang_vel_body_feedforward[1];
+    target_rate[2] = 1.0F * attitude_error.z + ang_vel_body_feedforward[2];
+    
     // '<Root>/x_reference'
-    float x_d[3]{att_target.x, att_target.y, att_target.z};
+    float x_d[3]{target_rate[0], target_rate[1], target_rate[2]};
 
-    // '<Root>/dx_measured'
-    float dx[3]{gyro_latest.x, gyro_latest.y, gyro_latest.z};
-
-    // '<Root>/x_measured'
-    float x[3]{att_body.x, att_body.y, att_body.z};
-
-    // '<Root>/u_out'
     float U[3];
 
     float lambdas[4]{lambda_rm.get(), lambda_pm.get(), lambda_ym.get(), lambda_s.get()};
@@ -163,7 +160,10 @@ Vector3f AC_CustomControl_Adaptive::update(void)
     float p_gains[6]{P1_11.get(),P1_22.get(),P2_11.get(),P2_22.get(),P3_11.get(),P3_22.get()};
     float errors[3]{attitude_error.x, attitude_error.y, attitude_error.z};
 
-    simulinkn_controller.step(x_d, dx, x, U, _dt, lambdas, k_gains, p_gains, sigma.get(), errors);
+    Vector3f gyro_latest = _ahrs->get_gyro_latest();
+    float dx[3]{gyro_latest.x, gyro_latest.y, gyro_latest.z};
+
+    simulinkn_controller.step(x_d, dx, U, _dt, lambdas, k_gains, p_gains, sigma.get(), errors);
 
     // return what arducopter main controller outputted
     return Vector3f(U[0], U[1], U[2]);
