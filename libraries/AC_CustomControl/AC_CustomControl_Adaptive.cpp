@@ -163,7 +163,7 @@ Vector3f AC_CustomControl_Adaptive::update(void)
     float p_gains[6]{P1_11.get(),P1_22.get(),P2_11.get(),P2_22.get(),P3_11.get(),P3_22.get()};
     float errors[3]{attitude_error.x, attitude_error.y, attitude_error.z};
 
-    simulinkn_controller.step(x_d, dx, x, U, _dt, lambdas, k_gains, p_gains, sigma.get());
+    simulinkn_controller.step(x_d, dx, x, U, _dt, lambdas, k_gains, p_gains, sigma.get(), errors);
 
     // return what arducopter main controller outputted
     return Vector3f(U[0], U[1], U[2]);

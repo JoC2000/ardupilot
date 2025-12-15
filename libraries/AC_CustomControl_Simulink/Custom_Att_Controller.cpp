@@ -183,15 +183,15 @@ void Custom_Att_Controller::step(
   derror[2] = dx[2] - Block_State.dx_m[2];
   
   // Sliding surface and xr variables
-  dxr[0] = Block_State.dx_m[0] - lambdas[3] * error[0];
+  dxr[0] = Block_State.dx_m[0] - lambdas[3] * errors[0];
   ddxr[0] = dxm[1] - lambdas[3] * derror[0];
   s[0] = dx[0] - dxr[0];
 
-  dxr[1] = Block_State.dx_m[1] - lambdas[3] * error[1];
+  dxr[1] = Block_State.dx_m[1] - lambdas[3] * errors[1];
   ddxr[1] = dxm[3] - lambdas[3] * derror[1];
   s[1] = dx[1] - dxr[1];
 
-  dxr[2] = Block_State.dx_m[2] - lambdas[3] * error[2];
+  dxr[2] = Block_State.dx_m[2] - lambdas[3] * errors[2];
   ddxr[2] = dxm[5] - lambdas[3] * derror[2];
   s[2] = dx[2] - dxr[2];
 
@@ -241,7 +241,7 @@ void Custom_Att_Controller::step(
     Log_CC1(Block_State.ah[0], Block_State.ah[1],
       Block_State.ah[2], Block_State.ah[3],
       Block_State.ah[4], Block_State.ah[5],
-      error[0], error[1], error[2]);
+      errors[0], errors[1], errors[2]);
 
     Log_CC2(dxr[0], dxr[1], dxr[2],
             ddxr[0], ddxr[1], ddxr[2]);
