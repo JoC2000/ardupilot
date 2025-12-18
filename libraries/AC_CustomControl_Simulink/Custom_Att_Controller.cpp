@@ -1,40 +1,43 @@
 #include "Custom_Att_Controller.h"
 
-void Custom_Att_Controller::Log_CC0(float u_roll, float u_pitch, float u_yaw, float xm_r, float xm_p, float xm_y, float dxm_r, float dxm_p, float dxm_y, float ddxmr, float ddxmp, float ddxmy) const
+void Custom_Att_Controller::Log_CC0(Vector3f U, Vector3f dwm, Vector3f error, Vector3f d_error) const
 {
   struct log_CC0 pkt = {
     LOG_PACKET_HEADER_INIT(LOG_CC0_MSG),
     time_us     : AP_HAL::micros64(),
-    u_roll      : degrees(u_roll),
-    u_pitch     : degrees(u_pitch),
-    u_yaw       : degrees(u_yaw),
-    xm_roll     : degrees(xm_r),
-    xm_pitch    : degrees(xm_p),
-    xm_yaw      : wrap_360(degrees(xm_y)),
-    dxm_roll    : degrees(dxm_r),
-    dxm_pitch   : degrees(dxm_p),
-    dxm_yaw     : degrees(dxm_y),
-    ddxm_roll   : degrees(ddxmr),
-    ddxm_pitch  : degrees(ddxmp),
-    ddxm_yaw    : degrees(ddxmy),
+    u_roll      : U.x,
+    u_pitch     : U.y,
+    u_yaw       : U.z,
+    dwm1        : dwm.x,
+    dwm2        : dwm.y,
+    dwm3        : dwm.z,
+    err1        : error.x,
+    err2        : error.y,
+    err3        : error.z,
+    derr1       : derror.x,
+    derr2       : derror.y,
+    derr3       : derror.z,
   };
   AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
 
-void Custom_Att_Controller::Log_CC1(float ah_r1, float ah_r2, float ah_p1, float ah_p2, float ah_y1, float ah_y2, float roll_e, float pitch_e, float yaw_e) const
+void Custom_Att_Controller::Log_CC1(Vector3f w_r, Vector3f d_wr, Vector3f w, Vector3f ah) const
 {
   struct log_CC1 pkt = {
     LOG_PACKET_HEADER_INIT(LOG_CC1_MSG),
     time_us     : AP_HAL::micros64(),
-    ah_r1       : ah_r1,
-    ah_r2       : ah_r2,
-    ah_p1       : ah_p1,
-    ah_p2       : ah_p2,
-    ah_y1       : ah_y1,
-    ah_y2       : ah_y2,
-    roll_e      : degrees(roll_e),
-    pitch_e     : degrees(pitch_e),
-    yaw_e       : degrees(yaw_e),
+    wr1         : wr.x,
+    wr2         : wr.y,
+    wr3         : wr.z,
+    dwr1        : dwr.x,
+    dwr2        : dwr.y,
+    dwr3        : dwr.z,
+    w1          : w.x,
+    w2          : w.y,
+    w3          : w.z,
+    ah1         : ah.x,
+    ah2         : ah.y,
+    ah3         : ah.z,
   };
   AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
@@ -54,14 +57,14 @@ void Custom_Att_Controller::Log_CC2(float dxr_roll, float dxr_pitch, float dxr_y
   AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
 
-void Custom_Att_Controller::Log_CC3(float s_roll, float s_pitch, float s_yaw) const
+void Custom_Att_Controller::Log_CC3(Vector3f s_) const
 {
   struct log_CC3 pkt = {
     LOG_PACKET_HEADER_INIT(LOG_CC3_MSG),
     time_us     : AP_HAL::micros64(),
-    s_roll      : degrees(s_roll),
-    s_pitch     : degrees(s_pitch),
-    s_yaw       : degrees(s_yaw)
+    s_roll      : s.x,
+    s_pitch     : s.y,
+    s_yaw       : s.z,
   };
   AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
@@ -134,48 +137,18 @@ void Custom_Att_Controller::step(
   // Update acceleration ref
   wm = dotw_m * dt + wm;
 
-  Log_CC0(U.x, U.y, U.z,
-    0, 0, 0,
-    0, 0, 0,
-    dotw_m.x, dotw_m.y, dotw_m.z);
+  Log_CC0(U, dotw_m, att_error, derror);
 
-  Log_CC1(a_hat.x, a_hat.y, a_hat.z,
-    0, 0, 0,
-    att_error.x, att_error.y, att_error.z);
+  Log_CC1(wr, dwr, w, a_hat);
 
   Log_CC2(wr.x, wr.y, wr.z,
           dwr.x, dwr.y, dwr.z);
 
-  Log_CC3(s.x, s.y, s.z);
+  Log_CC3(s);
 }
 
 void Custom_Att_Controller::initialize()
 {
-  // Tuning parameters
-  // lambda_rm = 25.45F;
-  // lambda_pm = 25.45F;
-  // lambda_ym = 19.25F;
-
-  // lambda_s = 1.5F;
-
-  // Controller gains
-  // k1 = 0.31F;
-  // k2 = 0.31F;
-  // k3 = 0.21F;
-
-  // Adaptation Law gains
-  // P1_11 = 0.35F;
-  // P1_22 = 0.15F;
-
-  // P2_11 = 0.35F;
-  // P2_22 = 0.15F;
-
-  // P3_11 = 0.25F;
-  // P3_22 = 0.15F;
-
-  // Sigma modification gain
-  // sigma = 0.25F;
-
   wm.zero();
   dotw_m.zero();
   P.zero();

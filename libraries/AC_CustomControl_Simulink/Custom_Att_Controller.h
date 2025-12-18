@@ -34,18 +34,14 @@ class Custom_Att_Controller final
   void step(Vector3f wd, Vector3f w, Vector3f &U, Vector3f att_error, float dt,
             Vector3f lambdas_model, Vector3f lambdas_sliding, Vector3f kgains, Vector3f pgains, Vector3f sigma);
 
-  void Log_CC0(float u_roll, float u_pitch, float u_yaw, 
-           float xm_r, float xm_p, float xm_y,
-           float dxm_r, float dxm_p, float dxm_y,
-           float ddxmr, float ddxmp, float ddxmy) const;
+  void Log_CC0(Vector3f U, Vector3f dwm, Vector3f error, Vector3f d_error) const;
   
-  void Log_CC1(float ah_r1, float ah_r2, float ah_p1, 
-           float ah_p2, float ah_y1, float ah_y2, float roll_e, float pitch_e, float yaw_e) const;
+  void Log_CC1(Vector3f w_r, Vector3f d_wr, Vector3f w, Vector3f ah) const;
   
   void Log_CC2(float dxr_roll, float dxr_pitch, float dxr_yaw, 
                float ddxr_roll, float ddxr_pitch, float ddxr_yaw) const;
 
-  void Log_CC3(float s_roll, float s_pitch, float s_yaw) const;
+  void Log_CC3(Vector3f s_) const;
 
   // Constructor
   Custom_Att_Controller();
