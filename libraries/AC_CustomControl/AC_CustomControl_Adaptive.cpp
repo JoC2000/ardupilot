@@ -150,25 +150,15 @@ Vector3f AC_CustomControl_Adaptive::update(void)
     target_rate[1] = ang_vel_body_feedforward[1];
     target_rate[2] = ang_vel_body_feedforward[2];
     
-    // '<Root>/x_reference'
-    float dx_d[3]{target_rate[0], target_rate[1], target_rate[2]};
-
-    float U[3];
-
     float lambdas[4]{lambda_rm.get(), lambda_pm.get(), lambda_ym.get(), lambda_s.get()};
-    float k_gains[3]{k1.get(), k2.get(), k3.get()};
-    float p_gains[6]{P1_11.get(),P1_22.get(),P2_11.get(),P2_22.get(),P3_11.get(),P3_22.get()};
-    float errors[3]{attitude_error.x, attitude_error.y, attitude_error.z};
+    Vector3f k_gains{k1.get(), k2.get(), k3.get()};
+    Vector3f p_gains{P1_11.get(), P2_11.get(), P3_11.get()};
 
     Vector3f gyro_latest = _ahrs->get_gyro_latest();
-    float dx[3]{gyro_latest.x, gyro_latest.y, gyro_latest.z};
     Vector3f motor_out;
 
-    simulinkn_controller.step(dx_d, dx, U, errors, _dt, lambdas, k_gains, p_gains, sigma.get());
+    simulinkn_controller.step(target_rate, gyro_latest, motor_out, attitude_error, _dt, lambdas, k_gains, p_gains, sigma.get());
 
-    motor_out.x = U[0];
-    motor_out.y = U[1];
-    motor_out.z = U[2];
     // return what arducopter main controller outputted
     return motor_out;
 }

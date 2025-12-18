@@ -31,8 +31,8 @@ class Custom_Att_Controller final
   void initialize();
 
   // Controller step function
-  void step(float dx_d[3], float dx[3], float U[3], float errors[3], float dt,
-            float lambdas[4], float k_gains[3], float p_gains[6], float sigma);
+  void step(Vector3f wd, Vector3f w, Vector3f U, Vector3f att_error, float dt,
+            float lambdas[4], Vector3f kgains, Vector3f pgains, float sigma);
 
   void Log_CC0(float u_roll, float u_pitch, float u_yaw, 
            float xm_r, float xm_p, float xm_y,
@@ -73,5 +73,6 @@ class Custom_Att_Controller final
 
   // float sigma;
 
-  float prev_yaw_ref,prev_yaw_real,prev_yaw_model;
+  Vector3f wm, a_hat;
+  Matrix3f P, Kd, Lm;
 };
