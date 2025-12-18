@@ -12,20 +12,6 @@
 #if AP_CUSTOMCONTROL_ADAPTIVE_ENABLED
 
 // @LoggerMessage: CC0
-// @Description: Custom Controller Control Outputs and Reference Model States
-// @Field: TimeUS: Time since system startup
-// @Field: U_roll: Control output for roll
-// @Field: U_pitch: Control output for pitch
-// @Field: U_yaw: Control output for yaw
-// @Field: Xm_roll: Reference Model roll
-// @Field: Xm_pitch: Reference Model pitch
-// @Field: Xm_yaw: Reference Model yaw
-// @Field: Dxm_roll: Reference Model roll rate
-// @Field: Dxm_pitch: Reference Model pitch rate
-// @Field: Dxm_yaw: Reference Model yaw rate
-// @Field: Ddxm_roll: Reference Model Roll Acceleration
-// @Field: Ddxm_pitch: Reference Model Pitch Acceleration
-// @Field: Ddxm_yaw: Reference Model Yaw Acceleration
 
 struct PACKED log_CC0 {
     LOG_PACKET_HEADER;
@@ -33,52 +19,38 @@ struct PACKED log_CC0 {
     float u_roll;
     float u_pitch;
     float u_yaw;
-    float xm_roll;
-    float xm_pitch;
-    float xm_yaw;
-    float dxm_roll;
-    float dxm_pitch;
-    float dxm_yaw;
-    float ddxm_roll;
-    float ddxm_pitch;
-    float ddxm_yaw;
+    float dwm1;
+    float dwm2;
+    float dwm3;
+    float err1;
+    float err2;
+    float err3;
+    float derr1;
+    float derr2;
+    float derr3;
 };
 
 // @LoggerMessage: CC1
-// @Description: Custom Controller Adaptive Mechanism Outputs and Error
-// @Field: TimeUS: Time since system startup
-// @Field: ah_R1: Adaptive param for acceleration compensation for roll
-// @Field: ah_R2: Adaptive param for decoupling effect for roll
-// @Field: ah_P1: Adaptive param for acceleration compensation for pitch
-// @Field: ah_P2: Adaptive param for decoupling effect for pitch
-// @Field: ah_Y1: Adaptive param for acceleration compensation for yaw
-// @Field: ah_Y1: Adaptive param for acceleration compensation for yaw
-// @Field: roll_e: Roll error
-// @Field: pitch_e: Pitch error
-// @Field: yaw_e: Yaw error
+
 struct PACKED log_CC1 {
     LOG_PACKET_HEADER;
     uint64_t time_us;
-    float ah_r1;
-    float ah_r2;
-    float ah_p1;
-    float ah_p2;
-    float ah_y1;
-    float ah_y2;
-    float roll_e;
-    float pitch_e;
-    float yaw_e;
+    float wr1;
+    float wr2;
+    float wr3;
+    float dwr1;
+    float dwr2;
+    float dwr3;
+    float w1;
+    float w2;
+    float w3;
+    float ah1;
+    float ah2;
+    float ah3;
 };
 
 // @LoggerMessage: CC2
-// @Description: Custom Controller Augmented Reference Velocity and Acceleration for the controller
-// @Field: TimeUS: Time since system startup
-// @Field: dxr_roll:    Augmented Reference Velocity Roll
-// @Field: dxr_pitch:   Augmented Reference Velocity Pitch
-// @Field: dxr_yaw:     Augmented Reference Velocity Yaw
-// @Field: ddxr_roll:   Augmented Reference Acceleration Roll
-// @Field: ddxr_pitch:  Augmented Reference Acceleration Pitch
-// @Field: ddxr_yaw:    Augmented Reference Acceleration Yaw
+
 struct PACKED log_CC2 {
     LOG_PACKET_HEADER;
     uint64_t time_us;
@@ -91,11 +63,7 @@ struct PACKED log_CC2 {
 };
 
 // @LoggerMessage: CC3
-// @Description: Custom Controller Sliding Surface
-// @Field: TimeUS: Time since system startup
-// @Field: s_roll: Sliding surface Roll
-// @Field: s_pitch: Sliding surface Pitch
-// @Field: s_yaw: Sliding surface Yaw
+
 struct PACKED log_CC3 {
     LOG_PACKET_HEADER;
     uint64_t time_us;
@@ -106,13 +74,13 @@ struct PACKED log_CC3 {
 
 #define LOG_STRUCTURE_FROM_CC \
     { LOG_CC0_MSG, sizeof(log_CC0), \
-        "CCL0", "Qffffffffffff", "TimeUS,Ur,Up,Uy,Xmr,Xmp,Xmy,Dxmr,Dxmp,Dxmy,Ddxmr,Ddxmp,Ddxmy", "s------------", "F------------" , true}, \
+        "CCL0", "Qffffffffffff", "TimeUS,U1,U2,U3,dwm1,dwm2,dwm3,e1,e2,e3,de1,de2,de3", "s------------", "F------------" , true}, \
     { LOG_CC1_MSG, sizeof(log_CC1), \
-        "CCL1", "Qfffffffff", "TimeUS,ah_r1,ah_r2,ah_p1,ah_p2,ah_y1,ah_y2,roll_e,pitch_e,yaw_e", "s---------", "F---------", true}, \
+        "CCL1", "Qffffffffffff", "TimeUS,wr1,wr2,wr3,dwr1,dwr2,dwr3,w1,w2,w3,ah1,ah2,ah3", "s------------", "F------------", true}, \
     { LOG_CC2_MSG, sizeof(log_CC2), \
         "CCL2", "Qffffff", "TimeUS,dxr_roll,dxr_pitch,dxr_yaw,ddxr_roll,ddxr_pitch,ddxr_yaw", "s------", "F------", true}, \
     { LOG_CC3_MSG, sizeof(log_CC3), \
-        "CCL3", "Qfff", "TimeUS,s_roll,s_pitch,s_yaw", "s---", "F---", true},
+        "CCL3", "Qfff", "TimeUS,s1,s2,s3", "s---", "F---", true},
 #else
 #define LOG_STRUCTURE_FROM_CC
 #endif
