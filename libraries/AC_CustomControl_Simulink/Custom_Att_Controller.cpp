@@ -150,33 +150,36 @@ void Custom_Att_Controller::step(
 
   // Error definitions
   // error[0] = x[0] - Block_State.x_m[0];
-  derror[0] = dx[0] - Block_State.x_m[0];
+  derror[0] = dx_d[0] - dx[0];
 
   // error[1] = x[1] - Block_State.x_m[1];
-  derror[1] = dx[1] - Block_State.x_m[1];
+  derror[1] = dx_d[1] - dx[1];
 
   // error[2] = x[2] - Block_State.x_m[2];
-  derror[2] = dx[2] - Block_State.x_m[2];
+  derror[2] = dx_d[2] - dx[2];
   
   // Sliding surface and xr variables
-  dxr[0] = Block_State.x_m[0] - lambdas[3] * errors[0];
+  dxr[0] = dx_d[0] - lambdas[3] * errors[0];
   ddxr[0] = Block_State.dx_m[0] - lambdas[3] * derror[0];
   s[0] = dx[0] - dxr[0];
 
-  dxr[1] = Block_State.x_m[1] - lambdas[3] * errors[1];
+  dxr[1] = dx_d[1] - lambdas[3] * errors[1];
   ddxr[1] = Block_State.dx_m[1] - lambdas[3] * derror[1];
   s[1] = dx[1] - dxr[1];
 
-  dxr[2] = Block_State.x_m[2] - lambdas[3] * errors[2];
+  dxr[2] = dx_d[2] - lambdas[3] * errors[2];
   ddxr[2] = Block_State.dx_m[2] - lambdas[3] * derror[2];
   s[2] = dx[2] - dxr[2];
 
   // Controller Outputs
   U[0] = -k_gains[0] * s[0] + (ddxr[0] * Block_State.ah[0] + dx[1] * dx[2] * Block_State.ah[1]);  
+  U[0] = constrain_float(0.1F*U[0], -10, 10);
 
   U[1] = -k_gains[1] * s[1] + (ddxr[1] * Block_State.ah[2] + dx[0] * dx[2] * Block_State.ah[3]);
+  U[1] = constrain_float(0.1F*U[1], -10, 10);
 
   U[2] = -k_gains[2] * s[2] + (ddxr[2] * Block_State.ah[4] + dx[0] * dx[1] * Block_State.ah[5]);
+  U[2] = constrain_float(0.1F*U[2], -10, 10);
 
   // Adaptation Law
   ah[0] = ((-p_gains[0] * ddxr[0] * s[0] + -0.0F * s[0] * dx[1] * dx[2]) - (p_gains[0] * sigma * Block_State.ah[0] + 0.0F * Block_State.ah[1])) * dt;
@@ -207,23 +210,23 @@ void Custom_Att_Controller::step(
   Block_State.dx_m[1] = dt * dxm[3] + Block_State.dx_m[1];
   Block_State.dx_m[2] = dt * dxm[5] + Block_State.dx_m[2];
 
-  if(++log_div >= 5){
-    log_div = 0;
-    Log_CC0(U[0], U[1], U[2],
-      Block_State.x_m[0], Block_State.x_m[1], Block_State.x_m[2],
-      Block_State.dx_m[0], Block_State.dx_m[1], Block_State.dx_m[2],
-      dxm[1], dxm[3], dxm[5]);
+  // if(++log_div >= 5){
+    // log_div = 0;
+  Log_CC0(U[0], U[1], U[2],
+    Block_State.x_m[0], Block_State.x_m[1], Block_State.x_m[2],
+    Block_State.dx_m[0], Block_State.dx_m[1], Block_State.dx_m[2],
+    dxm[1], dxm[3], dxm[5]);
 
-    Log_CC1(Block_State.ah[0], Block_State.ah[1],
-      Block_State.ah[2], Block_State.ah[3],
-      Block_State.ah[4], Block_State.ah[5],
-      errors[0], errors[1], errors[2]);
+  Log_CC1(Block_State.ah[0], Block_State.ah[1],
+    Block_State.ah[2], Block_State.ah[3],
+    Block_State.ah[4], Block_State.ah[5],
+    errors[0], errors[1], errors[2]);
 
-    Log_CC2(dxr[0], dxr[1], dxr[2],
-            ddxr[0], ddxr[1], ddxr[2]);
+  Log_CC2(dxr[0], dxr[1], dxr[2],
+          ddxr[0], ddxr[1], ddxr[2]);
 
-    Log_CC3(s[0], s[1], s[2]);
-  }
+  Log_CC3(s[0], s[1], s[2]);
+  // }
 
 }
 
