@@ -26,10 +26,11 @@ public:
 protected:
     // declare parameters here
     float _dt;
-    AP_Float lambda_rm, lambda_pm, lambda_ym, lambda_s;
+    AP_Float lambda_pm, lambda_qm, lambda_rm;
+    AP_Float lambda_ps, lambda_qs, lambda_rs;
     AP_Float k1, k2, k3;
-    AP_Float P1_11, P1_22, P2_11, P2_22, P3_11, P3_22;
-    AP_Float sigma;
+    AP_Float P_11, P_22, P_33;
+    AP_Float sigma_p, sigma_q, sigma_r;
 };
 
 #endif  // AP_CUSTOMCONTROL_EMPTY_ENABLED

@@ -31,8 +31,8 @@ class Custom_Att_Controller final
   void initialize();
 
   // Controller step function
-  void step(Vector3f wd, Vector3f w, Vector3f U, Vector3f att_error, float dt,
-            float lambdas[4], Vector3f kgains, Vector3f pgains, float sigma);
+  void step(Vector3f wd, Vector3f w, Vector3f &U, Vector3f att_error, float dt,
+            Vector3f lambdas_model, Vector3f lambdas_sliding, Vector3f kgains, Vector3f pgains, Vector3f sigma);
 
   void Log_CC0(float u_roll, float u_pitch, float u_yaw, 
            float xm_r, float xm_p, float xm_y,
@@ -58,21 +58,10 @@ class Custom_Att_Controller final
   // Block states
   DW_Custom_Att_Controller_T Block_State;
 
-  // Tuning parameters
-  // float lambda_rm,lambda_pm,lambda_ym;
-
-  // float lambda_s;
-
-  // float k1,k2,k3;
-
-  // float P1_11,P1_22;
-  
-  // float P2_11,P2_22;
-
-  // float P3_11,P3_22;
-
-  // float sigma;
-
-  Vector3f wm, a_hat;
-  Matrix3f P, Kd, Lm;
+  Vector3f ys, wm, dotw_m;
+  Vector3f a_hat, da_hat;
+  Vector3f wr, dwr;
+  Vector3f s;
+  Vector3f derror;
+  Matrix3f Y, P, Kd, Lm, Ls, SigmaM;
 };

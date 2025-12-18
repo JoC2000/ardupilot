@@ -12,85 +12,91 @@ const AP_Param::GroupInfo AC_CustomControl_Adaptive::var_info[] = {
     // @DisplayName: L_ROLL
     // @Description: Lambda gain for Roll Reference Model
     // @User: Advanced
-    AP_GROUPINFO("L_ROLL", 1, AC_CustomControl_Adaptive, lambda_rm, 30.15F),
+    AP_GROUPINFO("L_ROLL", 1, AC_CustomControl_Adaptive, lambda_pm, 30.15F),
 
     // @Param: L_PITCH
     // @DisplayName: L_PITCH
     // @Description: Lambda gain for Pitch Reference Model
     // @User: Advanced
-    AP_GROUPINFO("L_PITCH", 2, AC_CustomControl_Adaptive, lambda_pm, 30.15F),
+    AP_GROUPINFO("L_PITCH", 2, AC_CustomControl_Adaptive, lambda_qm, 30.15F),
 
     // @Param: L_YAW
     // @DisplayName: L_YAW
     // @Description: Lambda gain for Yaw Reference Model
     // @User: Advanced
-    AP_GROUPINFO("L_YAW", 3, AC_CustomControl_Adaptive, lambda_ym, 25.25F),
+    AP_GROUPINFO("L_YAW", 3, AC_CustomControl_Adaptive, lambda_rm, 25.25F),
 
-    // @Param: L_SLIDING
+    // @Param: LP_SLIDING
     // @DisplayName: L_SLIDING
-    // @Description: Lambda gain for the sliding surface for error tracking
+    // @Description: Lambda gain for x rate sliding surface
     // @User: Advanced
-    AP_GROUPINFO("L_SLIDING", 4, AC_CustomControl_Adaptive, lambda_s, 1.5F),
+    AP_GROUPINFO("LP_SLIDING", 4, AC_CustomControl_Adaptive, lambda_ps, 1.5F),
+
+    // @Param: LQ_SLIDING
+    // @DisplayName: L_SLIDING
+    // @Description: Lambda gain for y rate sliding surface
+    // @User: Advanced
+    AP_GROUPINFO("LQ_SLIDING", 5, AC_CustomControl_Adaptive, lambda_qs, 1.5F),
+
+    // @Param: LR_SLIDING
+    // @DisplayName: LR_SLIDING
+    // @Description: Lambda gain for z rate sliding surface
+    // @User: Advanced
+    AP_GROUPINFO("LR_SLIDING", 6, AC_CustomControl_Adaptive, lambda_rs, 1.5F),
 
     // @Param: K_ROLL
     // @DisplayName: K_ROLL
     // @Description: K gain for Roll controller
     // @User: Advanced
-    AP_GROUPINFO("K_ROLL", 5, AC_CustomControl_Adaptive, k1, 0.31F),
+    AP_GROUPINFO("K_ROLL", 7, AC_CustomControl_Adaptive, k1, 0.31F),
 
     // @Param: K_PITCH
     // @DisplayName: K_PITCH
     // @Description: K gain for Pitch controller
     // @User: Advanced
-    AP_GROUPINFO("K_PITCH", 6, AC_CustomControl_Adaptive, k2, 0.31F),
+    AP_GROUPINFO("K_PITCH", 8, AC_CustomControl_Adaptive, k2, 0.31F),
 
     // @Param: K_YAW
     // @DisplayName: K_YAW
     // @Description: K gain for Yaw controller
     // @User: Advanced
-    AP_GROUPINFO("K_YAW", 7, AC_CustomControl_Adaptive, k3, 0.21F),
+    AP_GROUPINFO("K_YAW", 9, AC_CustomControl_Adaptive, k3, 0.21F),
 
-    // @Param: P11_ROLL
-    // @DisplayName: P11_ROLL
-    // @Description: P1 roll adaptive gain
+    // @Param: P_ROLL
+    // @DisplayName: P_ROLL
+    // @Description: P roll adaptive gain
     // @User: Advanced
-    AP_GROUPINFO("P11_ROLL", 8, AC_CustomControl_Adaptive, P1_11, 0.20F),
+    AP_GROUPINFO("P_ROLL", 10, AC_CustomControl_Adaptive, P_11, 0.20F),
 
-    // @Param: P22_ROLL
-    // @DisplayName: P22_ROLL
-    // @Description: P2 roll adaptive gain
+    // @Param: P_PITCH
+    // @DisplayName: P_PITCH
+    // @Description: P pitch adaptive gain
     // @User: Advanced
-    AP_GROUPINFO("P22_ROLL", 9, AC_CustomControl_Adaptive, P1_22, 0.15F),
+    AP_GROUPINFO("P_PITCH", 11, AC_CustomControl_Adaptive, P_22, 0.15F),
 
-    // @Param: P11_PITCH
-    // @DisplayName: P11_PITCH
-    // @Description: P1 pitch adaptive gain
+    // @Param: P_YAW
+    // @DisplayName: P_YAW
+    // @Description: P yaw adaptive gain
     // @User: Advanced
-    AP_GROUPINFO("P11_PITCH", 10, AC_CustomControl_Adaptive, P2_11, 0.15F),
+    AP_GROUPINFO("P_YAW", 12, AC_CustomControl_Adaptive, P_33, 0.10F),
 
-    // @Param: P22_PITCH
-    // @DisplayName: P22_PITCH
-    // @Description: P2 pitch adaptive gain
-    // @User: Advanced
-    AP_GROUPINFO("P22_PITCH", 11, AC_CustomControl_Adaptive, P2_22, 0.15F),
-
-    // @Param: P11_YAW
-    // @DisplayName: P11_YAW
-    // @Description: P1 yaw adaptive gain
-    // @User: Advanced
-    AP_GROUPINFO("P11_YAW", 12, AC_CustomControl_Adaptive, P3_11, 0.10F),
-
-    // @Param: P22_YAW
-    // @DisplayName: P22_YAW
-    // @Description: P2 yaw adaptive gain
-    // @User: Advanced
-    AP_GROUPINFO("P22_YAW", 13, AC_CustomControl_Adaptive, P3_22, 0.10F),
-
-    // @Param: SIGMA
-    // @DisplayName: SIGMA
+    // @Param: SIGMA_P
+    // @DisplayName: SIGMA_P
     // @Description: Gain for sigma modification rule
     // @User: Advanced
-    AP_GROUPINFO("SIGMA", 14, AC_CustomControl_Adaptive, sigma, 0.25F),
+    AP_GROUPINFO("SIGMA_P", 13, AC_CustomControl_Adaptive, sigma_p, 0.25F),
+
+    // @Param: SIGMA_Q
+    // @DisplayName: SIGMA_Q
+    // @Description: Gain for sigma modification rule
+    // @User: Advanced
+    AP_GROUPINFO("SIGMA_Q", 14, AC_CustomControl_Adaptive, sigma_q, 0.25F),
+
+    // @Param: SIGMA_R
+    // @DisplayName: SIGMA_R
+    // @Description: Gain for sigma modification rule
+    // @User: Advanced
+    AP_GROUPINFO("SIGMA_R", 15, AC_CustomControl_Adaptive, sigma_r, 0.25F),
 
     AP_GROUPEND
 };
@@ -150,14 +156,15 @@ Vector3f AC_CustomControl_Adaptive::update(void)
     target_rate[1] = ang_vel_body_feedforward[1];
     target_rate[2] = ang_vel_body_feedforward[2];
     
-    float lambdas[4]{lambda_rm.get(), lambda_pm.get(), lambda_ym.get(), lambda_s.get()};
+    Vector3f lambdas_model{lambda_rm.get(), lambda_qm.get(), lambda_rm.get()};
+    Vector3f lambdas_sliding{lambda_ps.get(), lambda_qs.get(), lambda_rs.get()};
     Vector3f k_gains{k1.get(), k2.get(), k3.get()};
-    Vector3f p_gains{P1_11.get(), P2_11.get(), P3_11.get()};
-
+    Vector3f p_gains{P_11.get(), P_22.get(), P_33.get()};
+    Vector3f sigma{sigma_p.get(), sigma_q.get(), sigma_r.get()};
     Vector3f gyro_latest = _ahrs->get_gyro_latest();
     Vector3f motor_out;
 
-    simulinkn_controller.step(target_rate, gyro_latest, motor_out, attitude_error, _dt, lambdas, k_gains, p_gains, sigma.get());
+    simulinkn_controller.step(target_rate, gyro_latest, motor_out, attitude_error, _dt, lambdas_model, lambdas_sliding, k_gains, p_gains, sigma);
 
     // return what arducopter main controller outputted
     return motor_out;

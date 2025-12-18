@@ -67,26 +67,46 @@ void Custom_Att_Controller::Log_CC3(float s_roll, float s_pitch, float s_yaw) co
 }
 
 void Custom_Att_Controller::step(
-  Vector3f wd, Vector3f w, Vector3f U, Vector3f att_error, float dt,
-  float lambdas[4], Vector3f kgains, Vector3f pgains, float sigma)
+  Vector3f wd, Vector3f w, Vector3f &U, Vector3f att_error, float dt,
+  Vector3f lambdas_model, Vector3f lambdas_sliding, Vector3f kgains, Vector3f pgains, Vector3f sigma)
 {
-  Vector3f derror;
-  Vector3f wr;
-  Vector3f dwr;
-  Vector3f s;
-  Matrix3f Y;
-  Vector3f dotw_m;
-  Vector3f da_hat;
-
+  Kd.zero(); Lm.zero(); P.zero(), Y.zero(), SigmaM.zero();
   // Define Kd gains
   Kd.a.x = kgains.x;
   Kd.b.y = kgains.y;
   Kd.c.z = kgains.z;
 
   // Define Lambdas for Reference Model
-  Lm.a.x = lambdas[0];
-  Lm.b.y = lambdas[1];
-  Lm.c.z = lambdas[2];
+  Lm.a.x = lambdas_model.x;
+  Lm.b.y = lambdas_model.y;
+  Lm.c.z = lambdas_model.z;
+
+  // Define Lambdas for Sliding Surface
+  Ls.a.x = lambdas_sliding.x;
+  Ls.b.y = lambdas_sliding.y;
+  Ls.c.z = lambdas_sliding.z;
+
+  // Define Sigma gains
+  SigmaM.a.x = sigma.x;
+  SigmaM.b.y = sigma.y;
+  SigmaM.c.z = sigma.z;
+
+  // Generated Acceleration Reference
+  dotw_m = Lm * (wd - wm);
+
+  // Populate P gains matrix
+  P.a.x = pgains.x;
+  P.b.y = pgains.y;
+  P.c.z = pgains.z;
+
+  // Error definitions
+  derror = wd - w;
+  
+  // Sliding surface and wr variables
+  wr = wd - (Ls * att_error);
+  dwr = dotw_m - (Ls * derror);
+  
+  s = derror + Ls * att_error;
 
   // Populate Y matrix
   Y.a.x = dwr.x;
@@ -101,35 +121,18 @@ void Custom_Att_Controller::step(
   Y.c.y = w.x * w.y;
   Y.c.z = dwr.z;
 
-  P.a.x = pgains.x;
-  P.b.y = pgains.y;
-  P.c.z = pgains.z;
-
-  // Generated Acceleration Reference
-  dotw_m.x = 4.5F*(wd.x - wm.x);
-  dotw_m.y = 4.5F*(wd.y - wm.y);
-  dotw_m.z = 2.0F*(wd.z - wm.z);
-
-  // Error definitions
-  derror = wd - w;
-  
-  // Sliding surface and xr variables
-  wr = wd - att_error * lambdas[3];
-  dwr = dotw_m - derror * lambdas[3];
-  
-  s = derror + att_error*lambdas[3];
-
   // Controller Outputs
-  U = Y * a_hat - Kd*s;
-
-  da_hat = -P * Y.transposed() * s;
+  U = (Y * a_hat) - (Kd * s);
+  
+  // Intermediate vector
+  ys = Y.transposed() * s;
+  da_hat = -(P * ys) - (SigmaM * a_hat);
 
   // Update adaptation
   a_hat += da_hat * dt;
 
   // Update acceleration ref
   wm = dotw_m * dt + wm;
-
 
   Log_CC0(U.x, U.y, U.z,
     0, 0, 0,
@@ -174,10 +177,19 @@ void Custom_Att_Controller::initialize()
   // sigma = 0.25F;
 
   wm.zero();
-  a_hat.zero();
+  dotw_m.zero();
   P.zero();
   Kd.zero();
   Lm.zero();
+  Ls.zero();
+  SigmaM.zero();
+  derror.zero();
+  wr.zero();
+  dwr.zero();
+  s.zero();
+  Y.zero();
+  a_hat.zero();
+  da_hat.zero();
 }
 
 // Constructor
