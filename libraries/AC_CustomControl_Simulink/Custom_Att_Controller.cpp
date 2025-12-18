@@ -14,9 +14,9 @@ void Custom_Att_Controller::Log_CC0(Vector3f U, Vector3f dwm, Vector3f error, Ve
     err1        : error.x,
     err2        : error.y,
     err3        : error.z,
-    derr1       : derror.x,
-    derr2       : derror.y,
-    derr3       : derror.z,
+    derr1       : rate_error.x,
+    derr2       : rate_error.y,
+    derr3       : rate_error.z,
   };
   AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
@@ -57,7 +57,7 @@ void Custom_Att_Controller::Log_CC2(float dxr_roll, float dxr_pitch, float dxr_y
   AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
 
-void Custom_Att_Controller::Log_CC3(Vector3f s_) const
+void Custom_Att_Controller::Log_CC3(Vector3f s_, Vector3f w_d) const
 {
   struct log_CC3 pkt = {
     LOG_PACKET_HEADER_INIT(LOG_CC3_MSG),
@@ -65,6 +65,9 @@ void Custom_Att_Controller::Log_CC3(Vector3f s_) const
     s_roll      : s.x,
     s_pitch     : s.y,
     s_yaw       : s.z,
+    wd1         : w_d.x,
+    wd2         : w_d.y,
+    wd3         : w_d.z,
   };
   AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
@@ -102,14 +105,12 @@ void Custom_Att_Controller::step(
   P.b.y = pgains.y;
   P.c.z = pgains.z;
 
-  // Error definitions
-  derror = wd - w;
-  
   // Sliding surface and wr variables
-  wr = wd - (Ls * att_error);
-  dwr = dotw_m - (Ls * derror);
+  wr = wd + (Ls * att_error);
+  rate_error = wr - w;
+  dwr = dotw_m + (Ls * rate_error);
   
-  s = derror + Ls * att_error;
+  s = rate_error;
 
   // Populate Y matrix
   Y.a.x = dwr.x;
@@ -125,7 +126,7 @@ void Custom_Att_Controller::step(
   Y.c.z = dwr.z;
 
   // Controller Outputs
-  U = (Y * a_hat) - (Kd * s);
+  U = -(Y * a_hat) + (Kd * s);
   
   // Intermediate vector
   ys = Y.transposed() * s;
@@ -137,14 +138,14 @@ void Custom_Att_Controller::step(
   // Update acceleration ref
   wm = dotw_m * dt + wm;
 
-  Log_CC0(U, dotw_m, att_error, derror);
+  Log_CC0(U, dotw_m, att_error, rate_error);
 
   Log_CC1(wr, dwr, w, a_hat);
 
   Log_CC2(wr.x, wr.y, wr.z,
           dwr.x, dwr.y, dwr.z);
 
-  Log_CC3(s);
+  Log_CC3(s, wd);
 }
 
 void Custom_Att_Controller::initialize()
@@ -156,7 +157,7 @@ void Custom_Att_Controller::initialize()
   Lm.zero();
   Ls.zero();
   SigmaM.zero();
-  derror.zero();
+  rate_error.zero();
   wr.zero();
   dwr.zero();
   s.zero();
