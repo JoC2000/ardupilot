@@ -134,6 +134,9 @@ void Custom_Att_Controller::step(
 
   // Update adaptation
   a_hat += da_hat * dt;
+  a_hat.x = fmaxf(a_hat.x, 0.005F);
+  a_hat.y = fmaxf(a_hat.y, 0.005F);
+  a_hat.z = fmaxf(a_hat.z, 0.005F);
 
   // Update acceleration ref
   wm = dotw_m * dt + wm;
