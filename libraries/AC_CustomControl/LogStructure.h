@@ -73,6 +73,9 @@ struct PACKED log_CC3 {
     float wd1;
     float wd2;
     float wd3;
+    float ys1;
+    float ys2;
+    float ys3;
 };
 
 #define LOG_STRUCTURE_FROM_CC \
@@ -83,7 +86,7 @@ struct PACKED log_CC3 {
     { LOG_CC2_MSG, sizeof(log_CC2), \
         "CCL2", "Qffffff", "TimeUS,dxr_roll,dxr_pitch,dxr_yaw,ddxr_roll,ddxr_pitch,ddxr_yaw", "s------", "F------", true}, \
     { LOG_CC3_MSG, sizeof(log_CC3), \
-        "CCL3", "Qffffff", "TimeUS,s1,s2,s3,wd1,wd2,wd3", "s------", "F------", true},
+        "CCL3", "Qfffffffff", "TimeUS,s1,s2,s3,wd1,wd2,wd3,ys1,ys2,ys3", "s---------", "F---------", true},
 #else
 #define LOG_STRUCTURE_FROM_CC
 #endif

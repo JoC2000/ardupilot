@@ -57,7 +57,7 @@ void Custom_Att_Controller::Log_CC2(float dxr_roll, float dxr_pitch, float dxr_y
   AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
 
-void Custom_Att_Controller::Log_CC3(Vector3f s_, Vector3f w_d) const
+void Custom_Att_Controller::Log_CC3(Vector3f s_, Vector3f w_d, Vector3f ys_) const
 {
   struct log_CC3 pkt = {
     LOG_PACKET_HEADER_INIT(LOG_CC3_MSG),
@@ -68,6 +68,9 @@ void Custom_Att_Controller::Log_CC3(Vector3f s_, Vector3f w_d) const
     wd1         : degrees(w_d.x),
     wd2         : degrees(w_d.y),
     wd3         : degrees(w_d.z),
+    ys1         : ys_.x,
+    ys2         : ys_.y,
+    ys3         : ys_.z
   };
   AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
@@ -148,7 +151,7 @@ void Custom_Att_Controller::step(
   Log_CC2(wr.x, wr.y, wr.z,
           dwr.x, dwr.y, dwr.z);
 
-  Log_CC3(s, wd);
+  Log_CC3(s, wd, ys);
 }
 
 void Custom_Att_Controller::initialize()
