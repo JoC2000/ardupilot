@@ -38,8 +38,7 @@ class Custom_Att_Controller final
   
   void Log_CC1(Vector3f w_r, Vector3f d_wr, Vector3f w, Vector3f ah) const;
   
-  void Log_CC2(float dxr_roll, float dxr_pitch, float dxr_yaw, 
-               float ddxr_roll, float ddxr_pitch, float ddxr_yaw) const;
+  void Log_CC2(Vector3f dxr, Vector3f ddxr) const;
 
   void Log_CC3(Vector3f s_, Vector3f w_d, Vector3f ys) const;
 
@@ -59,5 +58,7 @@ class Custom_Att_Controller final
   Vector3f wr, dwr;
   Vector3f s;
   Vector3f rate_error;
+  Vector3f controller;
+  Vector3f adaptation;
   Matrix3f Y, P, Kd, Lm, Ls, SigmaM;
 };

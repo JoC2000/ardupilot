@@ -54,12 +54,12 @@ struct PACKED log_CC1 {
 struct PACKED log_CC2 {
     LOG_PACKET_HEADER;
     uint64_t time_us;
-    float dxr_roll_c;
-    float dxr_pitch_c;
-    float dxr_yaw_c;
-    float ddxr_roll_c;
-    float ddxr_pitch_c;
-    float ddxr_yaw_c;
+    float control_r;
+    float control_p;
+    float control_y;
+    float adapt_r;
+    float adapt_p;
+    float adapt_y;
 };
 
 // @LoggerMessage: CC3
@@ -84,7 +84,7 @@ struct PACKED log_CC3 {
     { LOG_CC1_MSG, sizeof(log_CC1), \
         "CCL1", "Qffffffffffff", "TimeUS,wr1,wr2,wr3,dwr1,dwr2,dwr3,w1,w2,w3,ah1,ah2,ah3", "s------------", "F------------", true}, \
     { LOG_CC2_MSG, sizeof(log_CC2), \
-        "CCL2", "Qffffff", "TimeUS,dxr_roll,dxr_pitch,dxr_yaw,ddxr_roll,ddxr_pitch,ddxr_yaw", "s------", "F------", true}, \
+        "CCL2", "Qffffff", "TimeUS,c_r,c_p,c_y,ad_r,ad_p,ad_y", "s------", "F------", true}, \
     { LOG_CC3_MSG, sizeof(log_CC3), \
         "CCL3", "Qfffffffff", "TimeUS,s1,s2,s3,wd1,wd2,wd3,ys1,ys2,ys3", "s---------", "F---------", true},
 #else

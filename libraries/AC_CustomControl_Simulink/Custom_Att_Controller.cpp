@@ -42,17 +42,17 @@ void Custom_Att_Controller::Log_CC1(Vector3f w_r, Vector3f d_wr, Vector3f w, Vec
   AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
 
-void Custom_Att_Controller::Log_CC2(float dxr_roll, float dxr_pitch, float dxr_yaw, float ddxr_roll, float ddxr_pitch, float ddxr_yaw) const
+void Custom_Att_Controller::Log_CC2(Vector3f controller_, Vector3f adaptation_) const
 {
   struct log_CC2 pkt = {
     LOG_PACKET_HEADER_INIT(LOG_CC2_MSG),
     time_us     : AP_HAL::micros64(),
-    dxr_roll_c  : degrees(dxr_roll),
-    dxr_pitch_c : degrees(dxr_pitch),
-    dxr_yaw_c   : degrees(dxr_yaw),
-    ddxr_roll_c : degrees(ddxr_roll),
-    ddxr_pitch_c: degrees(ddxr_pitch),
-    ddxr_yaw_c  : degrees(ddxr_yaw)
+    control_r   : controller_.x, 
+    control_p   : controller_.y,
+    control_y   : controller_.z,
+    adapt_r     : adaptation_.x,
+    adapt_p     : adaptation_.y,
+    adapt_y     : adaptation_.z
   };
   AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
@@ -129,7 +129,10 @@ void Custom_Att_Controller::step(
   Y.c.z = dwr.z;
 
   // Controller Outputs
-  U = -(Y * a_hat) + (Kd * s);
+  adaptation = Y * a_hat;
+  controller = Kd * s;
+
+  U = -adaptation + controller;
   
   // Intermediate vector
   ys = Y.transposed() * s;
@@ -148,8 +151,7 @@ void Custom_Att_Controller::step(
 
   Log_CC1(wr, dwr, w, a_hat);
 
-  Log_CC2(wr.x, wr.y, wr.z,
-          dwr.x, dwr.y, dwr.z);
+  Log_CC2(controller, adaptation);
 
   Log_CC3(s, wd, ys);
 }
@@ -170,6 +172,8 @@ void Custom_Att_Controller::initialize()
   Y.zero();
   a_hat.zero();
   da_hat.zero();
+  controller.zero();
+  adaptation.zero();
 }
 
 // Constructor
