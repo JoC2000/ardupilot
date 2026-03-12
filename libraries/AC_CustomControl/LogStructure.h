@@ -25,9 +25,9 @@ struct PACKED log_CC0 {
     float err1;
     float err2;
     float err3;
-    float derr1;
-    float derr2;
-    float derr3;
+    float dah1;
+    float dah2;
+    float dah3;
 };
 
 // @LoggerMessage: CC1
@@ -80,7 +80,7 @@ struct PACKED log_CC3 {
 
 #define LOG_STRUCTURE_FROM_CC \
     { LOG_CC0_MSG, sizeof(log_CC0), \
-        "CCL0", "Qffffffffffff", "TimeUS,U1,U2,U3,dwm1,dwm2,dwm3,e1,e2,e3,de1,de2,de3", "s------------", "F------------" , true}, \
+        "CCL0", "Qffffffffffff", "TimeUS,U1,U2,U3,dwm1,dwm2,dwm3,e1,e2,e3,dah1,dah2,dah3", "s------------", "F------------" , true}, \
     { LOG_CC1_MSG, sizeof(log_CC1), \
         "CCL1", "Qffffffffffff", "TimeUS,wr1,wr2,wr3,dwr1,dwr2,dwr3,w1,w2,w3,ah1,ah2,ah3", "s------------", "F------------", true}, \
     { LOG_CC2_MSG, sizeof(log_CC2), \

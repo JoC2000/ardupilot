@@ -1,6 +1,6 @@
 #include "Custom_Att_Controller.h"
 
-void Custom_Att_Controller::Log_CC0(Vector3f U, Vector3f dwm, Vector3f error, Vector3f d_error) const
+void Custom_Att_Controller::Log_CC0(Vector3f U, Vector3f dwm, Vector3f error, Vector3f dah) const
 {
   struct log_CC0 pkt = {
     LOG_PACKET_HEADER_INIT(LOG_CC0_MSG),
@@ -14,9 +14,9 @@ void Custom_Att_Controller::Log_CC0(Vector3f U, Vector3f dwm, Vector3f error, Ve
     err1        : degrees(error.x),
     err2        : degrees(error.y),
     err3        : degrees(error.z),
-    derr1       : degrees(d_error.x),
-    derr2       : degrees(d_error.y),
-    derr3       : degrees(d_error.z),
+    dah1        : dah.x,
+    dah2        : dah.y,
+    dah3        : dah.z,
   };
   AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
@@ -150,23 +150,20 @@ void Custom_Att_Controller::step(
   ys = Y.transposed() * s;
   da_hat = (P * ys);
 
+  // Apply param projection to stop adaptation if not necessary
   da_hat.x = param_projection(a_hat.x, da_hat.x, 0.01F, 0.1F);
   da_hat.y = param_projection(a_hat.y, da_hat.y, 0.01F, 0.1F);
   da_hat.z = param_projection(a_hat.z, da_hat.z, 0.01F, 0.1F);
 
   // Update adaptation
   a_hat += da_hat * dt;
-
   a_hat.x = constrain_float(a_hat.x, 0.01F, 0.1F);
   a_hat.y = constrain_float(a_hat.y, 0.01F, 0.1F);
   a_hat.z = constrain_float(a_hat.z, 0.01F, 0.1F);
 
-  Log_CC0(U, dotw_m, att_error, s);
-
+  Log_CC0(U, dotw_m, att_error, da_hat);
   Log_CC1(wr, dwr, w, a_hat);
-
   Log_CC2(controller, adaptation);
-
   Log_CC3(s, wd, ys);
 }
 
@@ -183,9 +180,9 @@ void Custom_Att_Controller::initialize()
   dwr.zero();
   s.zero();
   Y.zero();
-  a_hat.x = 0.04F;
-  a_hat.y = 0.04F;
-  a_hat.z = 0.02F;
+  a_hat.x = 0.03F;
+  a_hat.y = 0.02F;
+  a_hat.z = 0.01F;
   da_hat.zero();
   controller.zero();
   adaptation.zero();
