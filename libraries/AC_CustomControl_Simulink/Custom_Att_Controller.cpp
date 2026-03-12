@@ -14,9 +14,9 @@ void Custom_Att_Controller::Log_CC0(Vector3f U, Vector3f dwm, Vector3f error, Ve
     err1        : degrees(error.x),
     err2        : degrees(error.y),
     err3        : degrees(error.z),
-    derr1       : degrees(rate_error.x),
-    derr2       : degrees(rate_error.y),
-    derr3       : degrees(rate_error.z),
+    derr1       : degrees(d_error.x),
+    derr2       : degrees(d_error.y),
+    derr3       : degrees(d_error.z),
   };
   AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
@@ -75,6 +75,13 @@ void Custom_Att_Controller::Log_CC3(Vector3f s_, Vector3f w_d, Vector3f ys_) con
   AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
 
+float Custom_Att_Controller::param_projection(float ahat, float dahat, float ahat_min, float ahat_max)
+{
+  if (ahat >= ahat_max && dahat > 0.0F) return 0.0F;
+  else if (ahat <= ahat_min && dahat < 0.0F) return 0.0F;
+  else return dahat;
+}
+
 void Custom_Att_Controller::step(
   Vector3f wd, Vector3f w, Vector3f &U, Vector3f att_error, float dt,
   Vector3f lambdas_model, Vector3f lambdas_sliding, Vector3f kgains, Vector3f pgains, Vector3f sigma)
@@ -108,12 +115,17 @@ void Custom_Att_Controller::step(
   P.b.y = pgains.y;
   P.c.z = pgains.z;
 
-  // Sliding surface and wr variables
+  // Virtual controller reference, includes velocity and attitude targets
   wr = wd + (Ls * att_error);
-  rate_error = wr - w;
-  dwr = dotw_m + (Ls * rate_error);
-  
-  s = rate_error;
+
+  // Desired - Actual to match ArduPilot's logic
+  s = wr - w;
+
+  // Derivate of the virtual controller reference, the virtual accerelation reference uses the reference model acceleration
+  dwr = dotw_m + (Ls * (wd - w));
+
+  // Update acceleration ref
+  wm = dotw_m * dt + wm;
 
   // Populate Y matrix
   Y.a.x = dwr.x;
@@ -132,22 +144,24 @@ void Custom_Att_Controller::step(
   adaptation = Y * a_hat;
   controller = Kd * s;
 
-  U = -adaptation + controller;
+  U = adaptation + controller;
   
   // Intermediate vector
   ys = Y.transposed() * s;
-  da_hat = -(P * ys) - (SigmaM * a_hat);
+  da_hat = (P * ys);
+
+  da_hat.x = param_projection(a_hat.x, da_hat.x, 0.01F, 0.1F);
+  da_hat.y = param_projection(a_hat.y, da_hat.y, 0.01F, 0.1F);
+  da_hat.z = param_projection(a_hat.z, da_hat.z, 0.01F, 0.1F);
 
   // Update adaptation
   a_hat += da_hat * dt;
-  a_hat.x = fmaxf(a_hat.x, 0.005F);
-  a_hat.y = fmaxf(a_hat.y, 0.005F);
-  a_hat.z = fmaxf(a_hat.z, 0.005F);
 
-  // Update acceleration ref
-  wm = dotw_m * dt + wm;
+  a_hat.x = constrain_float(a_hat.x, 0.01F, 0.1F);
+  a_hat.y = constrain_float(a_hat.y, 0.01F, 0.1F);
+  a_hat.z = constrain_float(a_hat.z, 0.01F, 0.1F);
 
-  Log_CC0(U, dotw_m, att_error, rate_error);
+  Log_CC0(U, dotw_m, att_error, s);
 
   Log_CC1(wr, dwr, w, a_hat);
 
@@ -165,12 +179,13 @@ void Custom_Att_Controller::initialize()
   Lm.zero();
   Ls.zero();
   SigmaM.zero();
-  rate_error.zero();
   wr.zero();
   dwr.zero();
   s.zero();
   Y.zero();
-  a_hat.zero();
+  a_hat.x = 0.04F;
+  a_hat.y = 0.04F;
+  a_hat.z = 0.02F;
   da_hat.zero();
   controller.zero();
   adaptation.zero();

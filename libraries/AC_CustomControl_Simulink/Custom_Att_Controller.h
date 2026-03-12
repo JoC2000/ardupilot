@@ -42,6 +42,8 @@ class Custom_Att_Controller final
 
   void Log_CC3(Vector3f s_, Vector3f w_d, Vector3f ys) const;
 
+  float param_projection(float ahat, float dahat, float ahat_min, float ahat_max);
+
   // Constructor
   Custom_Att_Controller();
 
@@ -57,7 +59,6 @@ class Custom_Att_Controller final
   Vector3f a_hat, da_hat;
   Vector3f wr, dwr;
   Vector3f s;
-  Vector3f rate_error;
   Vector3f controller;
   Vector3f adaptation;
   Matrix3f Y, P, Kd, Lm, Ls, SigmaM;
