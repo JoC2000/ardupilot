@@ -80,23 +80,23 @@ const AP_Param::GroupInfo AC_CustomControl_Adaptive::var_info[] = {
     // @User: Advanced
     AP_GROUPINFO("P_YAW", 12, AC_CustomControl_Adaptive, P_33, 0.10F),
 
-    // @Param: SIGMA_P
-    // @DisplayName: SIGMA_P
-    // @Description: Gain for sigma modification rule
+    // @Param: ROLL_G
+    // @DisplayName: ROLL_G
+    // @Description: Initial guess for roll intertia
     // @User: Advanced
-    AP_GROUPINFO("SIGMA_P", 13, AC_CustomControl_Adaptive, sigma_p, 0.25F),
+    AP_GROUPINFO("ROLL_G", 13, AC_CustomControl_Adaptive, ah_guess_r, 0.03F),
 
-    // @Param: SIGMA_Q
-    // @DisplayName: SIGMA_Q
-    // @Description: Gain for sigma modification rule
+    // @Param: PITCH_G
+    // @DisplayName: PITCH_G
+    // @Description: Initial guess for pitch intertia
     // @User: Advanced
-    AP_GROUPINFO("SIGMA_Q", 14, AC_CustomControl_Adaptive, sigma_q, 0.25F),
+    AP_GROUPINFO("PITCH_G", 14, AC_CustomControl_Adaptive, ah_guess_p, 0.02F),
 
-    // @Param: SIGMA_R
-    // @DisplayName: SIGMA_R
-    // @Description: Gain for sigma modification rule
+    // @Param: YAW_G
+    // @DisplayName: YAW_G
+    // @Description: Initial guess for yaw intertia
     // @User: Advanced
-    AP_GROUPINFO("SIGMA_R", 15, AC_CustomControl_Adaptive, sigma_r, 0.25F),
+    AP_GROUPINFO("YAW_G", 15, AC_CustomControl_Adaptive, ah_guess_y, 0.01F),
 
     AP_GROUPEND
 };
@@ -160,11 +160,11 @@ Vector3f AC_CustomControl_Adaptive::update(void)
     Vector3f lambdas_sliding{lambda_ps.get(), lambda_qs.get(), lambda_rs.get()};
     Vector3f k_gains{k1.get(), k2.get(), k3.get()};
     Vector3f p_gains{P_11.get(), P_22.get(), P_33.get()};
-    Vector3f sigma{sigma_p.get(), sigma_q.get(), sigma_r.get()};
+    Vector3f guesses{ah_guess_r.get(), ah_guess_p.get(), ah_guess_y.get()};
     Vector3f gyro_latest = _ahrs->get_gyro_latest();
     Vector3f motor_out;
 
-    simulinkn_controller.step(target_rate, gyro_latest, motor_out, attitude_error, _dt, lambdas_model, lambdas_sliding, k_gains, p_gains, sigma);
+    simulinkn_controller.step(target_rate, gyro_latest, motor_out, attitude_error, _dt, lambdas_model, lambdas_sliding, k_gains, p_gains, guesses);
 
     // return what arducopter main controller outputted
     return motor_out;

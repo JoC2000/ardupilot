@@ -84,9 +84,10 @@ float Custom_Att_Controller::param_projection(float ahat, float dahat, float aha
 
 void Custom_Att_Controller::step(
   Vector3f wd, Vector3f w, Vector3f &U, Vector3f att_error, float dt,
-  Vector3f lambdas_model, Vector3f lambdas_sliding, Vector3f kgains, Vector3f pgains, Vector3f sigma)
+  Vector3f lambdas_model, Vector3f lambdas_sliding, Vector3f kgains, Vector3f pgains, Vector3f guesses)
 {
-  Kd.zero(); Lm.zero(); P.zero(), Y.zero(), SigmaM.zero();
+  Kd.zero(); Lm.zero(); P.zero(), Y.zero();
+  
   // Define Kd gains
   Kd.a.x = kgains.x;
   Kd.b.y = kgains.y;
@@ -103,9 +104,9 @@ void Custom_Att_Controller::step(
   Ls.c.z = lambdas_sliding.z;
 
   // Define Sigma gains
-  SigmaM.a.x = sigma.x;
-  SigmaM.b.y = sigma.y;
-  SigmaM.c.z = sigma.z;
+  guess.x = guesses.x;
+  guess.y = guesses.y;
+  guess.z = guesses.z;
 
   // Generated Acceleration Reference
   dotw_m = Lm * (wd - wm);
@@ -175,14 +176,13 @@ void Custom_Att_Controller::initialize()
   Kd.zero();
   Lm.zero();
   Ls.zero();
-  SigmaM.zero();
   wr.zero();
   dwr.zero();
   s.zero();
   Y.zero();
-  a_hat.x = 0.03F;
-  a_hat.y = 0.02F;
-  a_hat.z = 0.01F;
+  a_hat.x = guess.x;
+  a_hat.y = guess.y;
+  a_hat.z = guess.z;
   da_hat.zero();
   controller.zero();
   adaptation.zero();

@@ -30,7 +30,7 @@ protected:
     AP_Float lambda_ps, lambda_qs, lambda_rs;
     AP_Float k1, k2, k3;
     AP_Float P_11, P_22, P_33;
-    AP_Float sigma_p, sigma_q, sigma_r;
+    AP_Float ah_guess_r, ah_guess_p, ah_guess_y;
 };
 
 #endif  // AP_CUSTOMCONTROL_EMPTY_ENABLED

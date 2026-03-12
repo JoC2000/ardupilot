@@ -32,7 +32,7 @@ class Custom_Att_Controller final
 
   // Controller step function
   void step(Vector3f wd, Vector3f w, Vector3f &U, Vector3f att_error, float dt,
-            Vector3f lambdas_model, Vector3f lambdas_sliding, Vector3f kgains, Vector3f pgains, Vector3f sigma);
+            Vector3f lambdas_model, Vector3f lambdas_sliding, Vector3f kgains, Vector3f pgains, Vector3f guesses);
 
   void Log_CC0(Vector3f U, Vector3f dwm, Vector3f error, Vector3f d_error) const;
   
@@ -59,7 +59,7 @@ class Custom_Att_Controller final
   Vector3f a_hat, da_hat;
   Vector3f wr, dwr;
   Vector3f s;
-  Vector3f controller;
-  Vector3f adaptation;
-  Matrix3f Y, P, Kd, Lm, Ls, SigmaM;
+  Vector3f controller, adaptation;
+  Vector3f guess;
+  Matrix3f Y, P, Kd, Lm, Ls;
 };
