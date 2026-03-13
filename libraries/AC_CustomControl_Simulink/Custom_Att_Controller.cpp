@@ -1,6 +1,6 @@
 #include "Custom_Att_Controller.h"
 
-void Custom_Att_Controller::Log_CC0(Vector3f U, Vector3f dwm, Vector3f error, Vector3f dah) const
+void Custom_Att_Controller::Log_CC0(Vector3f U, Vector3f control, Vector3f adapt, Vector3f error) const
 {
   struct log_CC0 pkt = {
     LOG_PACKET_HEADER_INIT(LOG_CC0_MSG),
@@ -8,66 +8,69 @@ void Custom_Att_Controller::Log_CC0(Vector3f U, Vector3f dwm, Vector3f error, Ve
     u_roll      : U.x,
     u_pitch     : U.y,
     u_yaw       : U.z,
-    dwm1        : degrees(dwm.x),
-    dwm2        : degrees(dwm.y),
-    dwm3        : degrees(dwm.z),
+    control_r   : control.x,
+    control_p   : control.y,
+    control_y   : control.z,
+    adapt_r     : adapt.x,
+    adapt_p     : adapt.y,
+    adapt_y     : adapt.z,
     err1        : degrees(error.x),
     err2        : degrees(error.y),
-    err3        : degrees(error.z),
-    dah1        : dah.x,
-    dah2        : dah.y,
-    dah3        : dah.z,
+    err3        : degrees(error.z)
   };
   AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
 
-void Custom_Att_Controller::Log_CC1(Vector3f w_r, Vector3f d_wr, Vector3f w, Vector3f ah) const
+void Custom_Att_Controller::Log_CC1(Vector3f w_r, Vector3f d_wr, Vector3f w_m, Vector3f d_wm) const
 {
   struct log_CC1 pkt = {
     LOG_PACKET_HEADER_INIT(LOG_CC1_MSG),
     time_us     : AP_HAL::micros64(),
-    wr1         : degrees(wr.x),
-    wr2         : degrees(wr.y),
-    wr3         : degrees(wr.z),
-    dwr1        : degrees(dwr.x),
-    dwr2        : degrees(dwr.y),
-    dwr3        : degrees(dwr.z),
-    w1          : degrees(w.x),
-    w2          : degrees(w.y),
-    w3          : degrees(w.z),
-    ah1         : ah.x,
-    ah2         : ah.y,
-    ah3         : ah.z,
+    wr1         : degrees(w_r.x),
+    wr2         : degrees(w_r.y),
+    wr3         : degrees(w_r.z),
+    dwr1        : degrees(d_wr.x),
+    dwr2        : degrees(d_wr.y),
+    dwr3        : degrees(d_wr.z),
+    wm1         : degrees(w_m.x),
+    wm2         : degrees(w_m.y),
+    wm3         : degrees(w_m.z),
+    dwm1        : degrees(d_wm.x),
+    dwm2        : degrees(d_wm.y),
+    dwm3        : degrees(d_wm.z)
   };
   AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
 
-void Custom_Att_Controller::Log_CC2(Vector3f controller_, Vector3f adaptation_) const
+void Custom_Att_Controller::Log_CC2(Vector3f w_, Vector3f w_d, Vector3f s_) const
 {
   struct log_CC2 pkt = {
     LOG_PACKET_HEADER_INIT(LOG_CC2_MSG),
     time_us     : AP_HAL::micros64(),
-    control_r   : controller_.x, 
-    control_p   : controller_.y,
-    control_y   : controller_.z,
-    adapt_r     : adaptation_.x,
-    adapt_p     : adaptation_.y,
-    adapt_y     : adaptation_.z
+    w1          : degrees(w_.x), 
+    w2          : degrees(w_.y),
+    w3          : degrees(w_.z),
+    wd1         : degrees(w_d.x),
+    wd2         : degrees(w_d.y),
+    wd3         : degrees(w_d.z),
+    s_roll      : degrees(s_.x),
+    s_pitch     : degrees(s_.y),
+    s_yaw       : degrees(s_.z)
   };
   AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
 
-void Custom_Att_Controller::Log_CC3(Vector3f s_, Vector3f w_d, Vector3f ys_) const
+void Custom_Att_Controller::Log_CC3(Vector3f ah, Vector3f dah, Vector3f ys_) const
 {
   struct log_CC3 pkt = {
     LOG_PACKET_HEADER_INIT(LOG_CC3_MSG),
     time_us     : AP_HAL::micros64(),
-    s_roll      : degrees(s.x),
-    s_pitch     : degrees(s.y),
-    s_yaw       : degrees(s.z),
-    wd1         : degrees(w_d.x),
-    wd2         : degrees(w_d.y),
-    wd3         : degrees(w_d.z),
+    ah1         : ah.x,
+    ah2         : ah.y,
+    ah3         : ah.z,
+    dah1        : dah.x,
+    dah2        : dah.y,
+    dah3        : dah.z,
     ys1         : ys_.x,
     ys2         : ys_.y,
     ys3         : ys_.z
@@ -162,10 +165,10 @@ void Custom_Att_Controller::step(
   a_hat.y = constrain_float(a_hat.y, 0.01F, 0.1F);
   a_hat.z = constrain_float(a_hat.z, 0.01F, 0.1F);
 
-  Log_CC0(U, dotw_m, att_error, da_hat);
-  Log_CC1(wr, dwr, w, a_hat);
-  Log_CC2(controller, adaptation);
-  Log_CC3(s, wd, ys);
+  Log_CC0(U, controller, adaptation, att_error);
+  Log_CC1(wr, dwr, wm, dotw_m);
+  Log_CC2(w, wd, s);
+  Log_CC3(a_hat, da_hat, ys);
 }
 
 void Custom_Att_Controller::initialize()

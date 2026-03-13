@@ -34,13 +34,13 @@ class Custom_Att_Controller final
   void step(Vector3f wd, Vector3f w, Vector3f &U, Vector3f att_error, float dt,
             Vector3f lambdas_model, Vector3f lambdas_sliding, Vector3f kgains, Vector3f pgains, Vector3f guesses);
 
-  void Log_CC0(Vector3f U, Vector3f dwm, Vector3f error, Vector3f d_error) const;
+  void Log_CC0(Vector3f U, Vector3f controller, Vector3f adaptation, Vector3f att_error) const;
   
-  void Log_CC1(Vector3f w_r, Vector3f d_wr, Vector3f w, Vector3f ah) const;
+  void Log_CC1(Vector3f wr, Vector3f d_wr, Vector3f wm, Vector3f dwm) const;
   
-  void Log_CC2(Vector3f dxr, Vector3f ddxr) const;
+  void Log_CC2(Vector3f w, Vector3f wd, Vector3f s) const;
 
-  void Log_CC3(Vector3f s_, Vector3f w_d, Vector3f ys) const;
+  void Log_CC3(Vector3f ah, Vector3f dah, Vector3f ys) const;
 
   float param_projection(float ahat, float dahat, float ahat_min, float ahat_max);
 
