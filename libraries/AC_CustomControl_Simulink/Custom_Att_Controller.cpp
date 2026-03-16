@@ -116,6 +116,15 @@ void Custom_Att_Controller::step(
   P.b.y = pgains.y;
   P.c.z = pgains.z;
 
+  Vector3f raw_dwd;
+
+  if (dt > 0.0F) raw_dwd = (wd - wd_prev) / dt;
+  else raw_dwd.zero();
+
+  wd_prev = wd;
+
+  Vector3f dot_wd = target_accel.apply(raw_dwd, dt);
+
   // Generated Acceleration Reference
   dotw_m = Lm * (wd - wm);
 
@@ -129,7 +138,7 @@ void Custom_Att_Controller::step(
   s = wr - w;
 
   // Derivate of the virtual controller reference, the virtual accerelation reference uses the reference model acceleration
-  dwr = dotw_m + (Ls * (wd - w));
+  dwr = dot_wd + (Ls * (wd - w));
 
   // Populate Y matrix
   Y.a.x = dwr.x;
@@ -183,6 +192,8 @@ void Custom_Att_Controller::initialize()
   dwr.zero();
   s.zero();
   Y.zero();
+  wd_prev.zero();
+  target_accel.set_cutoff_frequency(10.0F);
   a_hat.x = guess.x;
   a_hat.y = guess.y;
   a_hat.z = guess.z;

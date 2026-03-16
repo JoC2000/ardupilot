@@ -1,6 +1,7 @@
 #pragma once
 #include <cmath>
 #include <AP_Logger/AP_Logger.h>
+#include <Filter/LowPassFilter.h>
 // Class declaration for model Custom_Att_Controller
 class Custom_Att_Controller final
 {
@@ -61,5 +62,7 @@ class Custom_Att_Controller final
   Vector3f s;
   Vector3f controller, adaptation;
   Vector3f guess;
+  Vector3f wd_prev;
+  LowPassFilterVector3f target_accel;
   Matrix3f Y, P, Kd, Lm, Ls;
 };
