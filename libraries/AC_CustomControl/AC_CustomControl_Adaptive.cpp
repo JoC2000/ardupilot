@@ -113,7 +113,7 @@ AC_CustomControl_Adaptive::AC_CustomControl_Adaptive(
     _dt = dt;
     AP_Param::setup_object_defaults(this, var_info);
 
-    simulinkn_controller.initialize();
+    adaptive_controller.initialize();
 }
 
 // update controller
@@ -164,7 +164,7 @@ Vector3f AC_CustomControl_Adaptive::update(void)
     Vector3f gyro_latest = _ahrs->get_gyro_latest();
     Vector3f motor_out;
 
-    simulinkn_controller.step(target_rate, gyro_latest, motor_out, attitude_error, _dt, lambdas_model, lambdas_sliding, k_gains, p_gains, guesses);
+    adaptive_controller.step(target_rate, gyro_latest, motor_out, attitude_error, _dt, lambdas_model, lambdas_sliding, k_gains, p_gains, guesses);
 
     // return what arducopter main controller outputted
     return motor_out;

@@ -111,13 +111,16 @@ void Custom_Att_Controller::step(
   guess.y = guesses.y;
   guess.z = guesses.z;
 
-  // Generated Acceleration Reference
-  dotw_m = Lm * (wd - wm);
-
   // Populate P gains matrix
   P.a.x = pgains.x;
   P.b.y = pgains.y;
   P.c.z = pgains.z;
+
+  // Generated Acceleration Reference
+  dotw_m = Lm * (wd - wm);
+
+  // Update Model Velocity
+  wm = dotw_m * dt + wm;
 
   // Virtual controller reference, includes velocity and attitude targets
   wr = wd + (Ls * att_error);
@@ -127,9 +130,6 @@ void Custom_Att_Controller::step(
 
   // Derivate of the virtual controller reference, the virtual accerelation reference uses the reference model acceleration
   dwr = dotw_m + (Ls * (wd - w));
-
-  // Update acceleration ref
-  wm = dotw_m * dt + wm;
 
   // Populate Y matrix
   Y.a.x = dwr.x;

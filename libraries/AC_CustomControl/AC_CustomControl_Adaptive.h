@@ -19,7 +19,7 @@ public:
     Vector3f update(void) override;
     void reset(void) override;
     
-    Custom_Att_Controller simulinkn_controller;
+    Custom_Att_Controller adaptive_controller;
     // user settable parameters
     static const struct AP_Param::GroupInfo var_info[];
 
