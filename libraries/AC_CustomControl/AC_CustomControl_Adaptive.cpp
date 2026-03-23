@@ -122,31 +122,31 @@ Vector3f AC_CustomControl_Adaptive::update(void)
 {
     // reset controller based on spool state
     switch (_motors->get_spool_state()) {
-        case AP_Motors::SpoolState::SHUT_DOWN:
-        case AP_Motors::SpoolState::GROUND_IDLE:
-            // We are still at the ground. Reset custom controller to avoid
-            // build up, ex: integrator
-            reset();
-            break;
+    case AP_Motors::SpoolState::SHUT_DOWN:
+    case AP_Motors::SpoolState::GROUND_IDLE:
+        // We are still at the ground. Reset custom controller to avoid
+        // build up, ex: integrator
+        reset();
+        break;
 
-        case AP_Motors::SpoolState::THROTTLE_UNLIMITED:
-        case AP_Motors::SpoolState::SPOOLING_UP:
-        case AP_Motors::SpoolState::SPOOLING_DOWN:
-            // we are off the ground
-            break;
+    case AP_Motors::SpoolState::THROTTLE_UNLIMITED:
+    case AP_Motors::SpoolState::SPOOLING_UP:
+    case AP_Motors::SpoolState::SPOOLING_DOWN:
+        // we are off the ground
+        break;
     }
 
     // run custom controller after here
-     Quaternion attitude_body, attitude_target;
+    Quaternion attitude_body, attitude_target;
     _ahrs->get_quat_body_to_ned(attitude_body);
 
     attitude_target = _att_control->get_attitude_target_quat();
-    
+
 
     Vector3f attitude_error;
     float _thrust_angle, _thrust_error_angle;
-    _att_control->thrust_heading_rotation_angles(attitude_target, attitude_body, attitude_error, 
-                                                 _thrust_angle, _thrust_error_angle);
+    _att_control->thrust_heading_rotation_angles(attitude_target, attitude_body, attitude_error,
+            _thrust_angle, _thrust_error_angle);
 
     Quaternion rotation_target_to_body = attitude_body.inverse() * attitude_target;
     Vector3f ang_vel_body_feedforward = rotation_target_to_body * _att_control->get_attitude_target_ang_vel();
@@ -155,7 +155,7 @@ Vector3f AC_CustomControl_Adaptive::update(void)
     target_rate[0] = ang_vel_body_feedforward[0];
     target_rate[1] = ang_vel_body_feedforward[1];
     target_rate[2] = ang_vel_body_feedforward[2];
-    
+
     Vector3f lambdas_model{lambda_rm.get(), lambda_qm.get(), lambda_rm.get()};
     Vector3f lambdas_sliding{lambda_ps.get(), lambda_qs.get(), lambda_rs.get()};
     Vector3f k_gains{k1.get(), k2.get(), k3.get()};

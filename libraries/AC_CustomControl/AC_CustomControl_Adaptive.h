@@ -7,7 +7,8 @@
 #include "AC_CustomControl_Backend.h"
 #include <AC_CustomControl_Adaptive/Custom_Att_Controller.h>
 
-class AC_CustomControl_Adaptive : public AC_CustomControl_Backend {
+class AC_CustomControl_Adaptive : public AC_CustomControl_Backend
+{
 public:
     AC_CustomControl_Adaptive(
         AC_CustomControl &frontend,
@@ -18,7 +19,7 @@ public:
 
     Vector3f update(void) override;
     void reset(void) override;
-    
+
     Custom_Att_Controller adaptive_controller;
     // user settable parameters
     static const struct AP_Param::GroupInfo var_info[];
