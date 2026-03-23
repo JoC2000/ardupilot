@@ -5,7 +5,7 @@
 #if AP_CUSTOMCONTROL_ADAPTIVE_ENABLED
 
 #include "AC_CustomControl_Backend.h"
-#include <AC_CustomControl_Simulink/Custom_Att_Controller.h>
+#include <AC_CustomControl_Adaptive/Custom_Att_Controller.h>
 
 class AC_CustomControl_Adaptive : public AC_CustomControl_Backend {
 public:
