@@ -23,8 +23,8 @@ public:
     void initialize();
 
     // Controller step function
-    void step(Vector3f wd, Vector3f w, Vector3f &U, Vector3f att_error, float dt,
-              Vector3f lambdas_model, Vector3f lambdas_sliding, Vector3f kgains, Vector3f pgains, Vector3f guesses);
+    void step(Vector3f w_d, Vector3f w, Vector3f &U, Vector3f att_error, float dt, Vector3f ah_min,
+              Vector3f ah_max, Vector3f lambdas_sliding, Vector3f kd_gains, Vector3f p_gains, Vector3f guesses);
 
     void Log_CC0(Vector3f U, Vector3f controller, Vector3f adaptation, Vector3f att_error) const;
 
@@ -34,7 +34,7 @@ public:
 
     void Log_CC3(Vector3f ah, Vector3f dah, Vector3f ys) const;
 
-    float param_projection(float ahat, float dahat, float ahat_min, float ahat_max);
+    float param_projection(float a_hat, float da_hat, float ahat_min, float ahat_max);
 
     // Constructor
     Custom_Att_Controller();
@@ -44,13 +44,12 @@ public:
 
     // private data and function members
 private:
-    Vector3f ys, wm, dotw_m;
-    Vector3f a_hat, da_hat;
-    Vector3f wr, dwr;
+    Vector3f ys, a_hat, da_hat;
+    Vector3f w_r, dw_r;
     Vector3f s;
     Vector3f controller, adaptation;
     Vector3f guess;
     Vector3f wd_prev;
     LowPassFilterVector3f target_accel;
-    Matrix3f Y, P, Kd, Lm, Ls;
+    Matrix3f Y, P, Kd, Ls;
 };

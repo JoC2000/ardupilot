@@ -28,10 +28,12 @@ protected:
     // declare parameters here
     float _dt;
     AP_Float lambda_pm, lambda_qm, lambda_rm;
-    AP_Float lambda_ps, lambda_qs, lambda_rs;
+    AP_Float lambda_sr, lambda_sp, lambda_sy;
     AP_Float k1, k2, k3;
     AP_Float P_11, P_22, P_33;
     AP_Float ah_guess_r, ah_guess_p, ah_guess_y;
+    AP_Float ah_min_r, ah_min_p, ah_min_y;
+    AP_Float ah_max_r, ah_max_p, ah_max_y;
 };
 
 #endif  // AP_CUSTOMCONTROL_EMPTY_ENABLED
