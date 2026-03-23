@@ -48,55 +48,55 @@ const AP_Param::GroupInfo AC_CustomControl_Adaptive::var_info[] = {
     // @DisplayName: L_SLIDING_R
     // @Description: Lambda gain for x rate sliding surface
     // @User: Advanced
-    AP_GROUPINFO("L_SLIDING_R", 7, AC_CustomControl_Adaptive, lambda_sr, 1.5F),
+    AP_GROUPINFO("L_SLIDING_R", 7, AC_CustomControl_Adaptive, lambda_sr, 0.87F),
 
     // @Param: L_SLIDING_P
     // @DisplayName: L_SLIDING_P
     // @Description: Lambda gain for y rate sliding surface
     // @User: Advanced
-    AP_GROUPINFO("L_SLIDING_P", 8, AC_CustomControl_Adaptive, lambda_sp, 1.5F),
+    AP_GROUPINFO("L_SLIDING_P", 8, AC_CustomControl_Adaptive, lambda_sp, 0.73F),
 
     // @Param: L_SLIDING_Y
     // @DisplayName: L_SLIDING_Y
     // @Description: Lambda gain for z rate sliding surface
     // @User: Advanced
-    AP_GROUPINFO("L_SLIDING_Y", 9, AC_CustomControl_Adaptive, lambda_sy, 1.5F),
+    AP_GROUPINFO("L_SLIDING_Y", 9, AC_CustomControl_Adaptive, lambda_sy, 0.45F),
 
     // @Param: K_ROLL
     // @DisplayName: K_ROLL
     // @Description: K gain for Roll controller
     // @User: Advanced
-    AP_GROUPINFO("K_ROLL", 10, AC_CustomControl_Adaptive, k1, 0.31F),
+    AP_GROUPINFO("K_ROLL", 10, AC_CustomControl_Adaptive, k1, 0.045F),
 
     // @Param: K_PITCH
     // @DisplayName: K_PITCH
     // @Description: K gain for Pitch controller
     // @User: Advanced
-    AP_GROUPINFO("K_PITCH", 11, AC_CustomControl_Adaptive, k2, 0.31F),
+    AP_GROUPINFO("K_PITCH", 11, AC_CustomControl_Adaptive, k2, 0.045F),
 
     // @Param: K_YAW
     // @DisplayName: K_YAW
     // @Description: K gain for Yaw controller
     // @User: Advanced
-    AP_GROUPINFO("K_YAW", 12, AC_CustomControl_Adaptive, k3, 0.21F),
+    AP_GROUPINFO("K_YAW", 12, AC_CustomControl_Adaptive, k3, 0.023F),
 
     // @Param: P_ROLL
     // @DisplayName: P_ROLL
     // @Description: P roll adaptive gain
     // @User: Advanced
-    AP_GROUPINFO("P_ROLL", 13, AC_CustomControl_Adaptive, P_11, 0.20F),
+    AP_GROUPINFO("P_ROLL", 13, AC_CustomControl_Adaptive, P_11, 0.08F),
 
     // @Param: P_PITCH
     // @DisplayName: P_PITCH
     // @Description: P pitch adaptive gain
     // @User: Advanced
-    AP_GROUPINFO("P_PITCH", 14, AC_CustomControl_Adaptive, P_22, 0.15F),
+    AP_GROUPINFO("P_PITCH", 14, AC_CustomControl_Adaptive, P_22, 0.08F),
 
     // @Param: P_YAW
     // @DisplayName: P_YAW
     // @Description: P yaw adaptive gain
     // @User: Advanced
-    AP_GROUPINFO("P_YAW", 15, AC_CustomControl_Adaptive, P_33, 0.10F),
+    AP_GROUPINFO("P_YAW", 15, AC_CustomControl_Adaptive, P_33, 0.05F),
 
     // @Param: GUESS_R
     // @DisplayName: GUESS_R
@@ -131,7 +131,8 @@ AC_CustomControl_Adaptive::AC_CustomControl_Adaptive(
     _dt = dt;
     AP_Param::setup_object_defaults(this, var_info);
 
-    adaptive_controller.initialize();
+    Vector3f guesses{ah_guess_r.get(), ah_guess_p.get(), ah_guess_y.get()};
+    adaptive_controller.initialize(guesses);
 }
 
 // update controller
@@ -179,11 +180,10 @@ Vector3f AC_CustomControl_Adaptive::update(void)
     Vector3f lambdas_sliding{lambda_sr.get(), lambda_sp.get(), lambda_sy.get()};
     Vector3f kd_gains{k1.get(), k2.get(), k3.get()};
     Vector3f p_gains{P_11.get(), P_22.get(), P_33.get()};
-    Vector3f guesses{ah_guess_r.get(), ah_guess_p.get(), ah_guess_y.get()};
     Vector3f gyro_latest = _ahrs->get_gyro_latest();
     Vector3f motor_out;
 
-    adaptive_controller.step(target_rate, gyro_latest, motor_out, attitude_error, _dt, ah_min, ah_max, lambdas_sliding, kd_gains, p_gains, guesses);
+    adaptive_controller.step(target_rate, gyro_latest, motor_out, attitude_error, _dt, ah_min, ah_max, lambdas_sliding, kd_gains, p_gains);
 
     // return what arducopter main controller outputted
     return motor_out;

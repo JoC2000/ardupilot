@@ -20,11 +20,11 @@ public:
     Custom_Att_Controller& operator= (Custom_Att_Controller &&) = delete;
 
     // Controller initialization
-    void initialize();
+    void initialize(Vector3f guesses);
 
     // Controller step function
     void step(Vector3f w_d, Vector3f w, Vector3f &U, Vector3f att_error, float dt, Vector3f ah_min,
-              Vector3f ah_max, Vector3f lambdas_sliding, Vector3f kd_gains, Vector3f p_gains, Vector3f guesses);
+              Vector3f ah_max, Vector3f lambdas_sliding, Vector3f kd_gains, Vector3f p_gains);
 
     void Log_CC0(Vector3f U, Vector3f controller, Vector3f adaptation, Vector3f att_error) const;
 
@@ -48,8 +48,7 @@ private:
     Vector3f w_r, dw_r;
     Vector3f s;
     Vector3f controller, adaptation;
-    Vector3f guess;
     Vector3f wd_prev;
     LowPassFilterVector3f target_accel;
-    Matrix3f Y, P, Kd, Ls;
+    Matrix3f Y;
 };

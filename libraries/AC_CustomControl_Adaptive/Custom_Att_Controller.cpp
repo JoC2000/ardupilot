@@ -91,24 +91,9 @@ float Custom_Att_Controller::param_projection(float ahat, float dahat, float aha
 
 void Custom_Att_Controller::step(
     Vector3f w_d, Vector3f w, Vector3f &U, Vector3f att_error, float dt, Vector3f ah_min,
-    Vector3f ah_max, Vector3f lambdas_sliding, Vector3f kd_gains, Vector3f p_gains, Vector3f guesses)
+    Vector3f ah_max, Vector3f lambdas_sliding, Vector3f kd_gains, Vector3f p_gains)
 {
-    Kd.zero(); P.zero(); Y.zero();
-
-    // Define Kd gains
-    Kd.a.x = kd_gains.x;
-    Kd.b.y = kd_gains.y;
-    Kd.c.z = kd_gains.z;
-
-    // Define Lambdas for Sliding Surface
-    Ls.a.x = lambdas_sliding.x;
-    Ls.b.y = lambdas_sliding.y;
-    Ls.c.z = lambdas_sliding.z;
-
-    // Populate P gains matrix
-    P.a.x = p_gains.x;
-    P.b.y = p_gains.y;
-    P.c.z = p_gains.z;
+    Y.zero();
 
     // Create acceleration raw ref based on filtered speed reference
     Vector3f raw_dw_d;
@@ -127,14 +112,18 @@ void Custom_Att_Controller::step(
 
     // Virtual controller reference, includes velocity and attitude targets
     // xr = x_d + (lambda * error);
-    w_r = w_d + (Ls * att_error);
+    Vector3f ls_att = att_error;
+    ls_att *= lambdas_sliding;
+    w_r = w_d + ls_att;
 
     // Desired - Actual to match ArduPilot's logic
     s = w_r - w;
 
     // Derivate of the virtual controller reference
     // dxr = dx_d + (lambda * d_error);
-    dw_r = dw_d + (Ls * (w_d - w));
+    Vector3f ls_diff = w_d - w;
+    ls_diff *= lambdas_sliding;
+    dw_r = dw_d + ls_diff;
 
     // Populate Y matrix
     Y.a.x = dw_r.x;
@@ -153,7 +142,8 @@ void Custom_Att_Controller::step(
     adaptation = Y * a_hat;
 
     // Controller contribution Kd * s
-    controller = Kd * s;
+    controller = s;
+    controller *= kd_gains;
 
     // Control output
     U = adaptation + controller;
@@ -161,7 +151,8 @@ void Custom_Att_Controller::step(
     // Adaptation law
     // da_hat = P*Y(t)*s
     ys = Y.transposed() * s;
-    da_hat = P * ys;
+    da_hat = ys;
+    da_hat *= p_gains;
 
     // Apply param projection to stop adaptation if not necessary
     da_hat.x = param_projection(a_hat.x, da_hat.x, ah_min.x, ah_max.x);
@@ -181,20 +172,17 @@ void Custom_Att_Controller::step(
     Log_CC3(a_hat, da_hat, ys);
 }
 
-void Custom_Att_Controller::initialize()
+void Custom_Att_Controller::initialize(Vector3f guesses)
 {
-    Kd.zero();
-    P.zero();
-    Ls.zero();
     w_r.zero();
     dw_r.zero();
     s.zero();
     Y.zero();
     wd_prev.zero();
     target_accel.set_cutoff_frequency(10.0F);
-    a_hat.x = guess.x;
-    a_hat.y = guess.y;
-    a_hat.z = guess.z;
+    a_hat.x = guesses.x;
+    a_hat.y = guesses.y;
+    a_hat.z = guesses.z;
     da_hat.zero();
     controller.zero();
     adaptation.zero();
