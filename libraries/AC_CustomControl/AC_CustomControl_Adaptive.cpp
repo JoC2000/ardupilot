@@ -102,13 +102,13 @@ const AP_Param::GroupInfo AC_CustomControl_Adaptive::var_info[] = {
     // @DisplayName: GUESS_R
     // @Description: Initial guess for roll intertia
     // @User: Advanced
-    AP_GROUPINFO("GUESS_R", 16, AC_CustomControl_Adaptive, ah_guess_r, 0.03F),
+    AP_GROUPINFO("GUESS_R", 16, AC_CustomControl_Adaptive, ah_guess_r, 0.01F),
 
     // @Param: GUESS_P
     // @DisplayName: GUESS_P
     // @Description: Initial guess for pitch intertia
     // @User: Advanced
-    AP_GROUPINFO("GUESS_P", 17, AC_CustomControl_Adaptive, ah_guess_p, 0.02F),
+    AP_GROUPINFO("GUESS_P", 17, AC_CustomControl_Adaptive, ah_guess_p, 0.01F),
 
     // @Param: GUESS_Y
     // @DisplayName: GUESS_Y
@@ -130,9 +130,6 @@ AC_CustomControl_Adaptive::AC_CustomControl_Adaptive(
 {
     _dt = dt;
     AP_Param::setup_object_defaults(this, var_info);
-
-    Vector3f guesses{ah_guess_r.get(), ah_guess_p.get(), ah_guess_y.get()};
-    adaptive_controller.initialize(guesses);
 }
 
 // update controller
@@ -193,6 +190,8 @@ Vector3f AC_CustomControl_Adaptive::update(void)
 // or to provide bumpless transfer from arducopter main controller
 void AC_CustomControl_Adaptive::reset(void)
 {
+    Vector3f guesses{ah_guess_r.get(), ah_guess_p.get(), ah_guess_y.get()};
+    adaptive_controller.reset_ah(guesses);
 }
 
 #endif  // AP_CUSTOMCONTROL_Adaptive_ENABLED

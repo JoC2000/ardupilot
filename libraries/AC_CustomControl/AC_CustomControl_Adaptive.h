@@ -27,7 +27,6 @@ public:
 protected:
     // declare parameters here
     float _dt;
-    AP_Float lambda_pm, lambda_qm, lambda_rm;
     AP_Float lambda_sr, lambda_sp, lambda_sy;
     AP_Float k1, k2, k3;
     AP_Float P_11, P_22, P_33;

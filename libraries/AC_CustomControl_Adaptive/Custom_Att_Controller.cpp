@@ -95,35 +95,27 @@ void Custom_Att_Controller::step(
 {
     Y.zero();
 
-    // Create acceleration raw ref based on filtered speed reference
-    Vector3f raw_dw_d;
-
-    if (dt > 0.0F) {
-        raw_dw_d = (w_d - wd_prev) / dt;
-    } else {
-        raw_dw_d.zero();
-    }
-
-    // Update previous speed reference
-    wd_prev = w_d;
-
-    // Generate filtered acceleration reference
-    Vector3f dw_d = target_accel.apply(raw_dw_d, dt);
-
     // Virtual controller reference, includes velocity and attitude targets
     // xr = x_d + (lambda * error);
     Vector3f ls_att = att_error;
     ls_att *= lambdas_sliding;
     w_r = w_d + ls_att;
 
-    // Desired - Actual to match ArduPilot's logic
-    s = w_r - w;
+    // Filtered virtual reference
+    w_r_filtered = target_vel_filtered.apply(w_r, dt);
 
-    // Derivate of the virtual controller reference
-    // dxr = dx_d + (lambda * d_error);
-    Vector3f ls_diff = w_d - w;
-    ls_diff *= lambdas_sliding;
-    dw_r = dw_d + ls_diff;
+    // Desired - Actual to match ArduPilot's logic
+    s = w_r_filtered - w;
+
+    // Create acceleration ref based on filtered speed reference
+    if (dt > 0.0F) {
+        dw_r = (w_r_filtered - w_r_prev) / dt;
+    } else {
+        dw_r.zero();
+    }
+
+    // Update previous speed reference
+    w_r_prev = w_r_filtered;
 
     // Populate Y matrix
     Y.a.x = dw_r.x;
@@ -178,14 +170,20 @@ void Custom_Att_Controller::initialize(Vector3f guesses)
     dw_r.zero();
     s.zero();
     Y.zero();
-    wd_prev.zero();
-    target_accel.set_cutoff_frequency(10.0F);
+    w_r_prev.zero();
+    w_r_filtered.zero();
+    target_vel_filtered.set_cutoff_frequency(20.0F);
     a_hat.x = guesses.x;
     a_hat.y = guesses.y;
     a_hat.z = guesses.z;
     da_hat.zero();
     controller.zero();
     adaptation.zero();
+}
+
+void Custom_Att_Controller::reset_ah(Vector3f guesses)
+{
+    a_hat = guesses;
 }
 
 // Constructor

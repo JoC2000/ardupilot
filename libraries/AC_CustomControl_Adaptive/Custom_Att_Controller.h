@@ -36,6 +36,8 @@ public:
 
     float param_projection(float a_hat, float da_hat, float ahat_min, float ahat_max);
 
+    void reset_ah(Vector3f guesses);
+
     // Constructor
     Custom_Att_Controller();
 
@@ -48,7 +50,7 @@ private:
     Vector3f w_r, dw_r;
     Vector3f s;
     Vector3f controller, adaptation;
-    Vector3f wd_prev;
-    LowPassFilterVector3f target_accel;
+    Vector3f w_r_prev, w_r_filtered;
+    LowPassFilterVector3f target_vel_filtered;
     Matrix3f Y;
 };
