@@ -116,6 +116,24 @@ const AP_Param::GroupInfo AC_CustomControl_Adaptive::var_info[] = {
     // @User: Advanced
     AP_GROUPINFO("GUESS_Y", 18, AC_CustomControl_Adaptive, ah_guess_y, 0.01F),
 
+    // @Param: L_MODEL_R
+    // @DisplayName: L_MODEL_R
+    // @Description: Lambda gain for x rate reference model
+    // @User: Advanced
+    AP_GROUPINFO("L_MODEL_R", 19, AC_CustomControl_Adaptive, lambda_mr, 15.0F),
+
+    // @Param: L_MODEL_P
+    // @DisplayName: L_MODEL_P
+    // @Description: Lambda gain for y rate reference model
+    // @User: Advanced
+    AP_GROUPINFO("L_MODEL_P", 20, AC_CustomControl_Adaptive, lambda_mp, 15.0F),
+
+    // @Param: L_MODEL_Y
+    // @DisplayName: L_MODEL_Y
+    // @Description: Lambda gain for z rate reference model
+    // @User: Advanced
+    AP_GROUPINFO("L_MODEL_Y", 21, AC_CustomControl_Adaptive, lambda_my, 15.0F),
+
     AP_GROUPEND
 };
 
@@ -130,6 +148,7 @@ AC_CustomControl_Adaptive::AC_CustomControl_Adaptive(
 {
     _dt = dt;
     AP_Param::setup_object_defaults(this, var_info);
+    adaptive_controller.initialize();
 }
 
 // update controller
@@ -175,12 +194,13 @@ Vector3f AC_CustomControl_Adaptive::update(void)
     Vector3f ah_min{ah_min_r.get(), ah_min_p.get(), ah_min_y.get()};
     Vector3f ah_max{ah_max_r.get(), ah_max_p.get(), ah_max_y.get()};
     Vector3f lambdas_sliding{lambda_sr.get(), lambda_sp.get(), lambda_sy.get()};
+    Vector3f lambdas_model{lambda_mr.get(), lambda_mp.get(), lambda_my.get()};
     Vector3f kd_gains{k1.get(), k2.get(), k3.get()};
     Vector3f p_gains{P_11.get(), P_22.get(), P_33.get()};
     Vector3f gyro_latest = _ahrs->get_gyro_latest();
     Vector3f motor_out;
 
-    adaptive_controller.step(target_rate, gyro_latest, motor_out, attitude_error, _dt, ah_min, ah_max, lambdas_sliding, kd_gains, p_gains);
+    adaptive_controller.step(target_rate, gyro_latest, motor_out, attitude_error, _dt, ah_min, ah_max, lambdas_model, lambdas_sliding, kd_gains, p_gains);
 
     // return what arducopter main controller outputted
     return motor_out;

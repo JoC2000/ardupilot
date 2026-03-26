@@ -28,6 +28,7 @@ protected:
     // declare parameters here
     float _dt;
     AP_Float lambda_sr, lambda_sp, lambda_sy;
+    AP_Float lambda_mr, lambda_mp, lambda_my;
     AP_Float k1, k2, k3;
     AP_Float P_11, P_22, P_33;
     AP_Float ah_guess_r, ah_guess_p, ah_guess_y;

@@ -21,7 +21,7 @@ err3        : degrees(error.z)
     AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
 
-void Custom_Att_Controller::Log_CC1(Vector3f wr, Vector3f dwr, Vector3f w_m, Vector3f d_wm) const
+void Custom_Att_Controller::Log_CC1(Vector3f wr, Vector3f dwr, Vector3f wm, Vector3f d_wm) const
 {
     struct log_CC1 pkt = {
         LOG_PACKET_HEADER_INIT(LOG_CC1_MSG),
@@ -91,31 +91,27 @@ float Custom_Att_Controller::param_projection(float ahat, float dahat, float aha
 
 void Custom_Att_Controller::step(
     Vector3f w_d, Vector3f w, Vector3f &U, Vector3f att_error, float dt, Vector3f ah_min,
-    Vector3f ah_max, Vector3f lambdas_sliding, Vector3f kd_gains, Vector3f p_gains)
+    Vector3f ah_max, Vector3f lambdas_model, Vector3f lambdas_sliding, Vector3f kd_gains, Vector3f p_gains)
 {
     Y.zero();
+
+    // Reference model
+    dw_m = w_d - w_m;
+    dw_m *= lambdas_model;
+    w_m += dw_m * dt;
 
     // Virtual controller reference, includes velocity and attitude targets
     // xr = x_d + (lambda * error);
     Vector3f ls_att = att_error;
     ls_att *= lambdas_sliding;
-    w_r = w_d + ls_att;
+    w_r = w_m + ls_att;
 
-    // Filtered virtual reference
-    w_r_filtered = target_vel_filtered.apply(w_r, dt);
+    Vector3f ls_diff = w_m - w;
+    ls_diff *= lambdas_sliding;
+    dw_r = dw_m + ls_diff;
 
     // Desired - Actual to match ArduPilot's logic
-    s = w_r_filtered - w;
-
-    // Create acceleration ref based on filtered speed reference
-    if (dt > 0.0F) {
-        dw_r = (w_r_filtered - w_r_prev) / dt;
-    } else {
-        dw_r.zero();
-    }
-
-    // Update previous speed reference
-    w_r_prev = w_r_filtered;
+    s = w_r - w;
 
     // Populate Y matrix
     Y.a.x = dw_r.x;
@@ -164,18 +160,14 @@ void Custom_Att_Controller::step(
     Log_CC3(a_hat, da_hat, ys);
 }
 
-void Custom_Att_Controller::initialize(Vector3f guesses)
+void Custom_Att_Controller::initialize()
 {
     w_r.zero();
     dw_r.zero();
+    w_m.zero();
+    dw_m.zero();
     s.zero();
     Y.zero();
-    w_r_prev.zero();
-    w_r_filtered.zero();
-    target_vel_filtered.set_cutoff_frequency(20.0F);
-    a_hat.x = guesses.x;
-    a_hat.y = guesses.y;
-    a_hat.z = guesses.z;
     da_hat.zero();
     controller.zero();
     adaptation.zero();
