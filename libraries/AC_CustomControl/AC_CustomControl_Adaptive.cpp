@@ -84,19 +84,19 @@ const AP_Param::GroupInfo AC_CustomControl_Adaptive::var_info[] = {
     // @DisplayName: P_ROLL
     // @Description: P roll adaptive gain
     // @User: Advanced
-    AP_GROUPINFO("P_ROLL", 13, AC_CustomControl_Adaptive, P_11, 0.08F),
+    AP_GROUPINFO("P_ROLL", 13, AC_CustomControl_Adaptive, p_roll, 0.08F),
 
     // @Param: P_PITCH
     // @DisplayName: P_PITCH
     // @Description: P pitch adaptive gain
     // @User: Advanced
-    AP_GROUPINFO("P_PITCH", 14, AC_CustomControl_Adaptive, P_22, 0.08F),
+    AP_GROUPINFO("P_PITCH", 14, AC_CustomControl_Adaptive, p_pitch, 0.08F),
 
     // @Param: P_YAW
     // @DisplayName: P_YAW
     // @Description: P yaw adaptive gain
     // @User: Advanced
-    AP_GROUPINFO("P_YAW", 15, AC_CustomControl_Adaptive, P_33, 0.05F),
+    AP_GROUPINFO("P_YAW", 15, AC_CustomControl_Adaptive, p_yaw, 0.05F),
 
     // @Param: GUESS_R
     // @DisplayName: GUESS_R
@@ -133,6 +133,24 @@ const AP_Param::GroupInfo AC_CustomControl_Adaptive::var_info[] = {
     // @Description: Lambda gain for z rate reference model
     // @User: Advanced
     AP_GROUPINFO("L_MODEL_Y", 21, AC_CustomControl_Adaptive, lambda_my, 15.0F),
+
+    // @Param: P_ROLL_D
+    // @DisplayName: P_ROLL_D
+    // @Description: Adaptive gain for roll drag effects
+    // @User: Advanced
+    AP_GROUPINFO("P_ROLL_D", 22, AC_CustomControl_Adaptive, p_roll_d, 0.08F),
+
+    // @Param: P_PITCH_D
+    // @DisplayName: P_PITCH_D
+    // @Description: Adaptive gain for pitch drag effects
+    // @User: Advanced
+    AP_GROUPINFO("P_PITCH_D", 23, AC_CustomControl_Adaptive, p_pitch_d, 0.08F),
+
+    // @Param: P_YAW_D
+    // @DisplayName: P_YAW_D
+    // @Description: Adaptive gain for yaw drag effects
+    // @User: Advanced
+    AP_GROUPINFO("P_YAW_D", 24, AC_CustomControl_Adaptive, p_yaw_d, 0.03F),
 
     AP_GROUPEND
 };
@@ -196,11 +214,15 @@ Vector3f AC_CustomControl_Adaptive::update(void)
     Vector3f lambdas_sliding{lambda_sr.get(), lambda_sp.get(), lambda_sy.get()};
     Vector3f lambdas_model{lambda_mr.get(), lambda_mp.get(), lambda_my.get()};
     Vector3f kd_gains{k1.get(), k2.get(), k3.get()};
-    Vector3f p_gains{P_11.get(), P_22.get(), P_33.get()};
+    Vector3f p_gains{p_roll.get(), p_pitch.get(), p_yaw.get()};
+    Vector3f p_gains_d{p_roll_d.get(), p_pitch_d.get(), p_yaw_d.get()};
     Vector3f gyro_latest = _ahrs->get_gyro_latest();
     Vector3f motor_out;
 
-    adaptive_controller.step(target_rate, gyro_latest, motor_out, attitude_error, _dt, ah_min, ah_max, lambdas_model, lambdas_sliding, kd_gains, p_gains);
+    adaptive_controller.step(
+                            target_rate, gyro_latest, motor_out, attitude_error, _dt,
+                            ah_min, ah_max, lambdas_model, lambdas_sliding, kd_gains,
+                            p_gains, p_gains_d);
 
     // return what arducopter main controller outputted
     return motor_out;

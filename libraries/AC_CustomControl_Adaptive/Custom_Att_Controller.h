@@ -1,7 +1,7 @@
 #pragma once
 #include <cmath>
 #include <AP_Logger/AP_Logger.h>
-#include <Filter/LowPassFilter.h>
+
 // Class declaration for model Custom_Att_Controller
 class Custom_Att_Controller final
 {
@@ -23,8 +23,9 @@ public:
     void initialize();
 
     // Controller step function
-    void step(Vector3f w_d, Vector3f w, Vector3f &U, Vector3f att_error, float dt, Vector3f ah_min,
-              Vector3f ah_max, Vector3f lambdas_model, Vector3f lambdas_sliding, Vector3f kd_gains, Vector3f p_gains);
+    void step(Vector3f w_d, Vector3f w, Vector3f &U, Vector3f att_error, float dt,
+              Vector3f ah_min, Vector3f ah_max, Vector3f lambdas_model, Vector3f lambdas_sliding,
+              Vector3f kd_gains, Vector3f p_gains, Vector3f p_gains_d);
 
     void Log_CC0(Vector3f U, Vector3f controller, Vector3f adaptation, Vector3f att_error) const;
 
@@ -46,10 +47,11 @@ public:
 
     // private data and function members
 private:
-    Vector3f ys, a_hat, da_hat;
+    Vector3f a_hat, da_hat;
+    Vector3f d_hat, dd_hat;
     Vector3f w_r, dw_r;
     Vector3f dw_m, w_m;
-    Vector3f s;
+    Vector3f s, ys;
     Vector3f controller, adaptation;
     Matrix3f Y;
 };

@@ -32,9 +32,9 @@ wr3         : degrees(wr.z),
 dwr1        : degrees(dwr.x),
 dwr2        : degrees(dwr.y),
 dwr3        : degrees(dwr.z),
-wm1         : degrees(w_m.x),
-wm2         : degrees(w_m.y),
-wm3         : degrees(w_m.z),
+wm1         : degrees(wm.x),
+wm2         : degrees(wm.y),
+wm3         : degrees(wm.z),
 dwm1        : degrees(d_wm.x),
 dwm2        : degrees(d_wm.y),
 dwm3        : degrees(d_wm.z)
@@ -91,7 +91,8 @@ float Custom_Att_Controller::param_projection(float ahat, float dahat, float aha
 
 void Custom_Att_Controller::step(
     Vector3f w_d, Vector3f w, Vector3f &U, Vector3f att_error, float dt, Vector3f ah_min,
-    Vector3f ah_max, Vector3f lambdas_model, Vector3f lambdas_sliding, Vector3f kd_gains, Vector3f p_gains)
+    Vector3f ah_max, Vector3f lambdas_model, Vector3f lambdas_sliding, Vector3f kd_gains, 
+    Vector3f p_gains, Vector3f p_gains_d)
 {
     Y.zero();
 
@@ -101,33 +102,37 @@ void Custom_Att_Controller::step(
     w_m += dw_m * dt;
 
     // Virtual controller reference, includes velocity and attitude targets
-    // xr = x_d + (lambda * error);
+    // xr = x_m + (lambda * error)
     Vector3f ls_att = att_error;
     ls_att *= lambdas_sliding;
     w_r = w_m + ls_att;
 
+    // Derivate of the virtual reference, the acceleration reference of the reference model
+    // dxr = dx_m + (lambda * derror) 
     Vector3f ls_diff = w_m - w;
     ls_diff *= lambdas_sliding;
     dw_r = dw_m + ls_diff;
 
+    // Sliding surface
     // Desired - Actual to match ArduPilot's logic
     s = w_r - w;
 
     // Populate Y matrix
-    Y.a.x = dw_r.x;
-    Y.a.y = -(w.y * w.z);
-    Y.a.z = w.y * w.z;
+    Y.a.x = dw_r.x;         Y.a.y = -(w.y * w.z);   Y.a.z = w.y * w.z;
+    Y.b.x = w.x * w.z;      Y.b.y = dw_r.y;         Y.b.z = -(w.x * w.z);
+    Y.c.x = -(w.x * w.y);   Y.c.y = w.x * w.y;      Y.c.z = dw_r.z;
 
-    Y.b.x = w.x * w.z;
-    Y.b.y = dw_r.y;
-    Y.b.z = -(w.x * w.z);
-
-    Y.c.x = -(w.x * w.y);
-    Y.c.y = w.x * w.y;
-    Y.c.z = dw_r.z;
+    // Populate Yd matrix
+    // Yd matrix is a diagonal matrix that contains wx,wy and wz.
+    // Instead of creating a diagonal matrix I am just going to reuse the w vector instead.
+    // Y_d = w;
 
     // Adaptation contribution
-    adaptation = Y * a_hat;
+    Vector3f drag_adaptation = w;
+    drag_adaptation *= d_hat;
+
+    // Sum of system and drag adaptation
+    adaptation = Y * a_hat + drag_adaptation;
 
     // Controller contribution Kd * s
     controller = s;
@@ -137,15 +142,25 @@ void Custom_Att_Controller::step(
     U = adaptation + controller;
 
     // Adaptation law
-    // da_hat = P*Y(t)*s
+    // da_hat = P*Y^(T)*s
     ys = Y.transposed() * s;
     da_hat = ys;
     da_hat *= p_gains;
+
+    // Adaptation for non linear effects
+    // dd_hat = P*Y_d^(T)*s
+    dd_hat = s;
+    dd_hat *= w;
+    dd_hat *= p_gains_d;
 
     // Apply param projection to stop adaptation if not necessary
     da_hat.x = param_projection(a_hat.x, da_hat.x, ah_min.x, ah_max.x);
     da_hat.y = param_projection(a_hat.y, da_hat.y, ah_min.y, ah_max.y);
     da_hat.z = param_projection(a_hat.z, da_hat.z, ah_min.z, ah_max.z);
+
+    dd_hat.x = param_projection(d_hat.x, dd_hat.x, 0.01F, 0.1F);
+    dd_hat.y = param_projection(d_hat.y, dd_hat.y, 0.01F, 0.1F);
+    dd_hat.z = param_projection(d_hat.z, dd_hat.z, 0.01F, 0.1F);
 
     // Update adaptation
     a_hat += da_hat * dt;
@@ -153,9 +168,14 @@ void Custom_Att_Controller::step(
     a_hat.y = constrain_float(a_hat.y, ah_min.y, ah_max.y);
     a_hat.z = constrain_float(a_hat.z, ah_min.z, ah_max.z);
 
+    d_hat += dd_hat * dt;
+    d_hat.x = constrain_float(d_hat.x, 0.01F, 0.1F);
+    d_hat.y = constrain_float(d_hat.y, 0.01F, 0.1F);
+    d_hat.z = constrain_float(d_hat.z, 0.01F, 0.1F);
+
     // Log debug variables
     Log_CC0(U, controller, adaptation, att_error);
-    Log_CC1(w_r, dw_r, w_r, dw_r);
+    Log_CC1(w_r, dw_r, w_m, dw_m);
     Log_CC2(w, w_d, s);
     Log_CC3(a_hat, da_hat, ys);
 }
@@ -169,6 +189,7 @@ void Custom_Att_Controller::initialize()
     s.zero();
     Y.zero();
     da_hat.zero();
+    dd_hat.zero();
     controller.zero();
     adaptation.zero();
 }
