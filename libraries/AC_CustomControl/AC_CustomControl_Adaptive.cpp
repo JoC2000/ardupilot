@@ -152,6 +152,60 @@ const AP_Param::GroupInfo AC_CustomControl_Adaptive::var_info[] = {
     // @User: Advanced
     AP_GROUPINFO("P_YAW_D", 24, AC_CustomControl_Adaptive, p_yaw_d, 0.03F),
 
+    // @Param: DH_MIN_R
+    // @DisplayName: DH_MIN_R
+    // @Description: Min roll drag estimation for drag effects
+    // @User: Advanced
+    AP_GROUPINFO("DH_MIN_R", 25, AC_CustomControl_Adaptive, dh_min_r, 0.00F),
+
+    // @Param: DH_MIN_P
+    // @DisplayName: DH_MIN_P
+    // @Description: Min pitch drag estimation for drag effects
+    // @User: Advanced
+    AP_GROUPINFO("DH_MIN_P", 26, AC_CustomControl_Adaptive, dh_min_p, 0.00F),
+
+    // @Param: DH_MIN_Y
+    // @DisplayName: DH_MIN_Y
+    // @Description: Min yaw drag estimation for drag effects
+    // @User: Advanced
+    AP_GROUPINFO("DH_MIN_Y", 27, AC_CustomControl_Adaptive, dh_min_y, 0.00F),
+
+    // @Param: DH_MAX_R
+    // @DisplayName: DH_MAX_R
+    // @Description: Max roll drag estimation for drag effects
+    // @User: Advanced
+    AP_GROUPINFO("DH_MAX_R", 28, AC_CustomControl_Adaptive, dh_max_r, 0.1F),
+
+    // @Param: DH_MAX_P
+    // @DisplayName: DH_MAX_P
+    // @Description: Max pitch drag estimation for drag effects
+    // @User: Advanced
+    AP_GROUPINFO("DH_MAX_P", 29, AC_CustomControl_Adaptive, dh_max_p, 0.1F),
+
+    // @Param: DH_MAX_Y
+    // @DisplayName: DH_MAX_Y
+    // @Description: Max yaw drag estimation for drag effects
+    // @User: Advanced
+    AP_GROUPINFO("DH_MAX_Y", 30, AC_CustomControl_Adaptive, dh_max_y, 0.1F),
+
+    // @Param: D_GUESS_R
+    // @DisplayName: D_GUESS_R
+    // @Description: Initial guess for roll drag effects
+    // @User: Advanced
+    AP_GROUPINFO("D_GUESS_R", 31, AC_CustomControl_Adaptive, dh_guess_r, 0.01F),
+
+    // @Param: D_GUESS_P
+    // @DisplayName: D_GUESS_P
+    // @Description: Initial guess for pitch drag effects
+    // @User: Advanced
+    AP_GROUPINFO("D_GUESS_P", 32, AC_CustomControl_Adaptive, dh_guess_p, 0.01F),
+
+    // @Param: D_GUESS_Y
+    // @DisplayName: D_GUESS_Y
+    // @Description: Initial guess for yaw drag effects
+    // @User: Advanced
+    AP_GROUPINFO("D_GUESS_Y", 33, AC_CustomControl_Adaptive, dh_guess_y, 0.01F),
+
     AP_GROUPEND
 };
 
@@ -211,6 +265,8 @@ Vector3f AC_CustomControl_Adaptive::update(void)
 
     Vector3f ah_min{ah_min_r.get(), ah_min_p.get(), ah_min_y.get()};
     Vector3f ah_max{ah_max_r.get(), ah_max_p.get(), ah_max_y.get()};
+    Vector3f dh_min{dh_min_r.get(), dh_min_p.get(), dh_min_y.get()};
+    Vector3f dh_max{dh_max_r.get(), dh_max_p.get(), dh_max_y.get()};
     Vector3f lambdas_sliding{lambda_sr.get(), lambda_sp.get(), lambda_sy.get()};
     Vector3f lambdas_model{lambda_mr.get(), lambda_mp.get(), lambda_my.get()};
     Vector3f kd_gains{k1.get(), k2.get(), k3.get()};
@@ -222,7 +278,7 @@ Vector3f AC_CustomControl_Adaptive::update(void)
     adaptive_controller.step(
                             target_rate, gyro_latest, motor_out, attitude_error, _dt,
                             ah_min, ah_max, lambdas_model, lambdas_sliding, kd_gains,
-                            p_gains, p_gains_d);
+                            p_gains, p_gains_d, dh_min, dh_max);
 
     // return what arducopter main controller outputted
     return motor_out;
@@ -232,8 +288,9 @@ Vector3f AC_CustomControl_Adaptive::update(void)
 // or to provide bumpless transfer from arducopter main controller
 void AC_CustomControl_Adaptive::reset(void)
 {
-    Vector3f guesses{ah_guess_r.get(), ah_guess_p.get(), ah_guess_y.get()};
-    adaptive_controller.reset_ah(guesses);
+    Vector3f guesses_ah{ah_guess_r.get(), ah_guess_p.get(), ah_guess_y.get()};
+    Vector3f guesses_dh{dh_guess_r.get(), dh_guess_p.get(), dh_guess_y.get()};
+    adaptive_controller.reset_ah(guesses_ah, guesses_dh);
 }
 
 #endif  // AP_CUSTOMCONTROL_Adaptive_ENABLED

@@ -35,6 +35,9 @@ protected:
     AP_Float ah_guess_r, ah_guess_p, ah_guess_y;
     AP_Float ah_min_r, ah_min_p, ah_min_y;
     AP_Float ah_max_r, ah_max_p, ah_max_y;
+    AP_Float dh_guess_r, dh_guess_p, dh_guess_y;
+    AP_Float dh_min_r, dh_min_p, dh_min_y;
+    AP_Float dh_max_r, dh_max_p, dh_max_y;
 };
 
 #endif  // AP_CUSTOMCONTROL_ADAPTIVE_ENABLED

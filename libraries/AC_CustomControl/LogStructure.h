@@ -63,6 +63,9 @@ struct PACKED log_CC2 {
     float s_roll;
     float s_pitch;
     float s_yaw;
+    float ys1;
+    float ys2;
+    float ys3;
 };
 
 // @LoggerMessage: CC3
@@ -76,9 +79,12 @@ struct PACKED log_CC3 {
     float dah1;
     float dah2;
     float dah3;
-    float ys1;
-    float ys2;
-    float ys3;
+    float dh1;
+    float dh2;
+    float dh3;
+    float ddh1;
+    float ddh2;
+    float ddh3;
 };
 
 #define LOG_STRUCTURE_FROM_CC \
@@ -87,9 +93,9 @@ struct PACKED log_CC3 {
     { LOG_CC1_MSG, sizeof(log_CC1), \
         "CCL1", "Qffffffffffff", "TimeUS,wr1,wr2,wr3,dwr1,dwr2,dwr3,wm1,wm2,wm3,dwm1,dwm2,dwm3", "s------------", "F------------", true}, \
     { LOG_CC2_MSG, sizeof(log_CC2), \
-        "CCL2", "Qfffffffff", "TimeUS,w1,w2,w3,wd1,wd2,wd3,s1,s2,s3", "s---------", "F---------", true}, \
+        "CCL2", "Qffffffffffff", "TimeUS,w1,w2,w3,wd1,wd2,wd3,s1,s2,s3,ys1,ys2,ys3", "s------------", "F------------", true}, \
     { LOG_CC3_MSG, sizeof(log_CC3), \
-        "CCL3", "Qfffffffff", "TimeUS,ah1,ah2,ah3,dah1,dah2,dah3,ys1,ys2,ys3", "s---------", "F---------", true},
+        "CCL3", "Qffffffffffff", "TimeUS,ah1,ah2,ah3,dah1,dah2,dah3,dh1,dh2,dh3,ddh1,ddh2,ddh3", "s------------", "F------------", true},
 #else
 #define LOG_STRUCTURE_FROM_CC
 #endif

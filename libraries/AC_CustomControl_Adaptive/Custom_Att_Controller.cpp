@@ -42,7 +42,7 @@ dwm3        : degrees(d_wm.z)
     AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
 
-void Custom_Att_Controller::Log_CC2(Vector3f w_, Vector3f wd, Vector3f s_) const
+void Custom_Att_Controller::Log_CC2(Vector3f w_, Vector3f wd, Vector3f s_, Vector3f ys_) const
 {
     struct log_CC2 pkt = {
         LOG_PACKET_HEADER_INIT(LOG_CC2_MSG),
@@ -55,12 +55,15 @@ wd2         : degrees(wd.y),
 wd3         : degrees(wd.z),
 s_roll      : degrees(s_.x),
 s_pitch     : degrees(s_.y),
-s_yaw       : degrees(s_.z)
+s_yaw       : degrees(s_.z),
+ys1         : ys_.x,
+ys2         : ys_.y,
+ys3         : ys_.z
     };
     AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
 
-void Custom_Att_Controller::Log_CC3(Vector3f ah, Vector3f dah, Vector3f ys_) const
+void Custom_Att_Controller::Log_CC3(Vector3f ah, Vector3f dah, Vector3f dh, Vector3f ddh) const
 {
     struct log_CC3 pkt = {
         LOG_PACKET_HEADER_INIT(LOG_CC3_MSG),
@@ -71,9 +74,12 @@ ah3         : ah.z,
 dah1        : dah.x,
 dah2        : dah.y,
 dah3        : dah.z,
-ys1         : ys_.x,
-ys2         : ys_.y,
-ys3         : ys_.z
+dh1         : dh.x,
+dh2         : dh.y,
+dh3         : dh.z,
+ddh1        : ddh.x,
+ddh2        : ddh.y,
+ddh3        : ddh.z,
     };
     AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
@@ -92,7 +98,7 @@ float Custom_Att_Controller::param_projection(float ahat, float dahat, float aha
 void Custom_Att_Controller::step(
     Vector3f w_d, Vector3f w, Vector3f &U, Vector3f att_error, float dt, Vector3f ah_min,
     Vector3f ah_max, Vector3f lambdas_model, Vector3f lambdas_sliding, Vector3f kd_gains, 
-    Vector3f p_gains, Vector3f p_gains_d)
+    Vector3f p_gains, Vector3f p_gains_d, Vector3f dh_min, Vector3f dh_max)
 {
     Y.zero();
 
@@ -158,9 +164,9 @@ void Custom_Att_Controller::step(
     da_hat.y = param_projection(a_hat.y, da_hat.y, ah_min.y, ah_max.y);
     da_hat.z = param_projection(a_hat.z, da_hat.z, ah_min.z, ah_max.z);
 
-    dd_hat.x = param_projection(d_hat.x, dd_hat.x, 0.01F, 0.1F);
-    dd_hat.y = param_projection(d_hat.y, dd_hat.y, 0.01F, 0.1F);
-    dd_hat.z = param_projection(d_hat.z, dd_hat.z, 0.01F, 0.1F);
+    dd_hat.x = param_projection(d_hat.x, dd_hat.x, dh_min.x, dh_max.x);
+    dd_hat.y = param_projection(d_hat.y, dd_hat.y, dh_min.y, dh_max.y);
+    dd_hat.z = param_projection(d_hat.z, dd_hat.z, dh_min.z, dh_max.z);
 
     // Update adaptation
     a_hat += da_hat * dt;
@@ -169,15 +175,15 @@ void Custom_Att_Controller::step(
     a_hat.z = constrain_float(a_hat.z, ah_min.z, ah_max.z);
 
     d_hat += dd_hat * dt;
-    d_hat.x = constrain_float(d_hat.x, 0.01F, 0.1F);
-    d_hat.y = constrain_float(d_hat.y, 0.01F, 0.1F);
-    d_hat.z = constrain_float(d_hat.z, 0.01F, 0.1F);
+    d_hat.x = constrain_float(d_hat.x, dh_min.x, dh_max.x);
+    d_hat.y = constrain_float(d_hat.y, dh_min.y, dh_max.y);
+    d_hat.z = constrain_float(d_hat.z, dh_min.z, dh_max.z);
 
     // Log debug variables
     Log_CC0(U, controller, adaptation, att_error);
     Log_CC1(w_r, dw_r, w_m, dw_m);
-    Log_CC2(w, w_d, s);
-    Log_CC3(a_hat, da_hat, ys);
+    Log_CC2(w, w_d, s, ys);
+    Log_CC3(a_hat, da_hat, d_hat, dd_hat);
 }
 
 void Custom_Att_Controller::initialize()
@@ -194,9 +200,10 @@ void Custom_Att_Controller::initialize()
     adaptation.zero();
 }
 
-void Custom_Att_Controller::reset_ah(Vector3f guesses)
+void Custom_Att_Controller::reset_ah(Vector3f guesses_ah, Vector3f guesses_dh)
 {
-    a_hat = guesses;
+    a_hat = guesses_ah;
+    d_hat = guesses_dh;
 }
 
 // Constructor
