@@ -98,7 +98,7 @@ float Custom_Att_Controller::param_projection(float ahat, float dahat, float aha
 void Custom_Att_Controller::step(
     Vector3f w_d, Vector3f w, Vector3f &U, Vector3f att_error, float dt, Vector3f ah_min,
     Vector3f ah_max, Vector3f lambdas_model, Vector3f lambdas_sliding, Vector3f kd_gains, 
-    Vector3f p_gains, Vector3f p_gains_d, Vector3f dh_min, Vector3f dh_max)
+    Vector3f p_gains, Vector3f p_gains_d, Vector3f dh_min, Vector3f dh_max, Vector3f p_gains_b, Vector3f bh_min, Vector3f bh_max)
 {
     Y.zero();
 
@@ -145,7 +145,7 @@ void Custom_Att_Controller::step(
     controller *= kd_gains;
 
     // Control output
-    U = adaptation + controller;
+    U = adaptation + controller + b_hat;
 
     // Adaptation law
     // da_hat = P*Y^(T)*s
@@ -159,6 +159,11 @@ void Custom_Att_Controller::step(
     dd_hat *= w;
     dd_hat *= p_gains_d;
 
+    // Adaptation for constant disturbance
+    // db_hat = P*Y_b(T)*s (Regressor here is identity matrix)
+    db_hat = s;
+    db_hat *= p_gains_b; 
+
     // Apply param projection to stop adaptation if not necessary
     da_hat.x = param_projection(a_hat.x, da_hat.x, ah_min.x, ah_max.x);
     da_hat.y = param_projection(a_hat.y, da_hat.y, ah_min.y, ah_max.y);
@@ -167,6 +172,10 @@ void Custom_Att_Controller::step(
     dd_hat.x = param_projection(d_hat.x, dd_hat.x, dh_min.x, dh_max.x);
     dd_hat.y = param_projection(d_hat.y, dd_hat.y, dh_min.y, dh_max.y);
     dd_hat.z = param_projection(d_hat.z, dd_hat.z, dh_min.z, dh_max.z);
+
+    db_hat.x = param_projection(b_hat.x, db_hat.x, bh_min.x, bh_max.x);
+    db_hat.y = param_projection(b_hat.y, db_hat.y, bh_min.y, bh_max.y);
+    db_hat.z = param_projection(b_hat.z, db_hat.z, bh_min.z, bh_max.z);
 
     // Update adaptation
     a_hat += da_hat * dt;
@@ -178,6 +187,11 @@ void Custom_Att_Controller::step(
     d_hat.x = constrain_float(d_hat.x, dh_min.x, dh_max.x);
     d_hat.y = constrain_float(d_hat.y, dh_min.y, dh_max.y);
     d_hat.z = constrain_float(d_hat.z, dh_min.z, dh_max.z);
+
+    b_hat += db_hat * dt;
+    b_hat.x = constrain_float(b_hat.x, bh_min.x, bh_max.x);
+    b_hat.y = constrain_float(b_hat.y, bh_min.y, bh_max.y);
+    b_hat.z = constrain_float(b_hat.z, bh_min.z, bh_max.z);
 
     // Log debug variables
     Log_CC0(U, controller, adaptation, att_error);
@@ -196,14 +210,16 @@ void Custom_Att_Controller::initialize()
     Y.zero();
     da_hat.zero();
     dd_hat.zero();
+    db_hat.zero();
     controller.zero();
     adaptation.zero();
 }
 
-void Custom_Att_Controller::reset_ah(Vector3f guesses_ah, Vector3f guesses_dh)
+void Custom_Att_Controller::reset_ah(Vector3f guesses_ah, Vector3f guesses_dh, Vector3f guesses_bh)
 {
     a_hat = guesses_ah;
     d_hat = guesses_dh;
+    b_hat = guesses_bh;
 }
 
 // Constructor

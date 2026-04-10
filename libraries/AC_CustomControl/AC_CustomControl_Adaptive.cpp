@@ -206,6 +206,78 @@ const AP_Param::GroupInfo AC_CustomControl_Adaptive::var_info[] = {
     // @User: Advanced
     AP_GROUPINFO("D_GUESS_Y", 33, AC_CustomControl_Adaptive, dh_guess_y, 0.01F),
 
+    // @Param: P_ROLL_B
+    // @DisplayName: P_ROLL_B
+    // @Description: Adaptive gain for roll constant effects
+    // @User: Advanced
+    AP_GROUPINFO("P_ROLL_B", 34, AC_CustomControl_Adaptive, p_roll_b, 0.01F),
+
+    // @Param: P_PITCH_B
+    // @DisplayName: P_PITCH_B
+    // @Description: Adaptive gain for pitch constant effects
+    // @User: Advanced
+    AP_GROUPINFO("P_PITCH_B", 35, AC_CustomControl_Adaptive, p_pitch_b, 0.01F),
+
+    // @Param: P_YAW_B
+    // @DisplayName: P_YAW_B
+    // @Description: Adaptive gain for yaw constant effects
+    // @User: Advanced
+    AP_GROUPINFO("P_YAW_B", 36, AC_CustomControl_Adaptive, p_yaw_b, 0.005F),
+
+    // @Param: BH_MIN_R
+    // @DisplayName: BH_MIN_R
+    // @Description: Min roll estimation for constant effects
+    // @User: Advanced
+    AP_GROUPINFO("BH_MIN_R", 37, AC_CustomControl_Adaptive, bh_min_r, -0.5F),
+
+    // @Param: BH_MIN_P
+    // @DisplayName: BH_MIN_P
+    // @Description: Min pitch estimation for constant effects
+    // @User: Advanced
+    AP_GROUPINFO("BH_MIN_P", 38, AC_CustomControl_Adaptive, bh_min_p, -0.5F),
+
+    // @Param: BH_MIN_Y
+    // @DisplayName: BH_MIN_Y
+    // @Description: Min yaw estimation for constant effects
+    // @User: Advanced
+    AP_GROUPINFO("BH_MIN_Y", 39, AC_CustomControl_Adaptive, bh_min_y, -0.5F),
+
+    // @Param: BH_MAX_R
+    // @DisplayName: BH_MAX_R
+    // @Description: Max roll estimation for constant effects
+    // @User: Advanced
+    AP_GROUPINFO("BH_MAX_R", 40, AC_CustomControl_Adaptive, bh_max_r, 0.5F),
+
+    // @Param: BH_MAX_P
+    // @DisplayName: BH_MAX_P
+    // @Description: Max pitch estimation for constant effects
+    // @User: Advanced
+    AP_GROUPINFO("BH_MAX_P", 41, AC_CustomControl_Adaptive, bh_max_p, 0.5F),
+
+    // @Param: BH_MAX_Y
+    // @DisplayName: BH_MAX_Y
+    // @Description: Max yaw estimation for constant effects
+    // @User: Advanced
+    AP_GROUPINFO("BH_MAX_Y", 42, AC_CustomControl_Adaptive, bh_max_y, 0.5F),
+
+    // @Param: B_GUESS_R
+    // @DisplayName: B_GUESS_R
+    // @Description: Initial guess for roll constant effects
+    // @User: Advanced
+    AP_GROUPINFO("B_GUESS_R", 43, AC_CustomControl_Adaptive, bh_guess_r, 0.0F),
+
+    // @Param: B_GUESS_P
+    // @DisplayName: B_GUESS_P
+    // @Description: Initial guess for pitch constant effects
+    // @User: Advanced
+    AP_GROUPINFO("B_GUESS_P", 44, AC_CustomControl_Adaptive, bh_guess_p, 0.0F),
+
+    // @Param: B_GUESS_Y
+    // @DisplayName: B_GUESS_Y
+    // @Description: Initial guess for yaw constant effects
+    // @User: Advanced
+    AP_GROUPINFO("B_GUESS_Y", 45, AC_CustomControl_Adaptive, bh_guess_y, 0.0F),
+
     AP_GROUPEND
 };
 
@@ -267,18 +339,21 @@ Vector3f AC_CustomControl_Adaptive::update(void)
     Vector3f ah_max{ah_max_r.get(), ah_max_p.get(), ah_max_y.get()};
     Vector3f dh_min{dh_min_r.get(), dh_min_p.get(), dh_min_y.get()};
     Vector3f dh_max{dh_max_r.get(), dh_max_p.get(), dh_max_y.get()};
+    Vector3f bh_min{bh_min_r.get(), bh_min_p.get(), bh_min_y.get()};
+    Vector3f bh_max{bh_max_r.get(), bh_max_p.get(), bh_max_y.get()};
     Vector3f lambdas_sliding{lambda_sr.get(), lambda_sp.get(), lambda_sy.get()};
     Vector3f lambdas_model{lambda_mr.get(), lambda_mp.get(), lambda_my.get()};
     Vector3f kd_gains{k1.get(), k2.get(), k3.get()};
     Vector3f p_gains{p_roll.get(), p_pitch.get(), p_yaw.get()};
     Vector3f p_gains_d{p_roll_d.get(), p_pitch_d.get(), p_yaw_d.get()};
+    Vector3f p_gains_b{p_roll_b.get(), p_pitch_b.get(), p_yaw_b.get()};
     Vector3f gyro_latest = _ahrs->get_gyro_latest();
     Vector3f motor_out;
 
     adaptive_controller.step(
                             target_rate, gyro_latest, motor_out, attitude_error, _dt,
                             ah_min, ah_max, lambdas_model, lambdas_sliding, kd_gains,
-                            p_gains, p_gains_d, dh_min, dh_max);
+                            p_gains, p_gains_d, dh_min, dh_max, p_gains_b, bh_min, bh_max);
 
     // return what arducopter main controller outputted
     return motor_out;
@@ -290,7 +365,8 @@ void AC_CustomControl_Adaptive::reset(void)
 {
     Vector3f guesses_ah{ah_guess_r.get(), ah_guess_p.get(), ah_guess_y.get()};
     Vector3f guesses_dh{dh_guess_r.get(), dh_guess_p.get(), dh_guess_y.get()};
-    adaptive_controller.reset_ah(guesses_ah, guesses_dh);
+    Vector3f guesses_bh{bh_guess_r.get(), bh_guess_p.get(), bh_guess_y.get()};
+    adaptive_controller.reset_ah(guesses_ah, guesses_dh, guesses_bh);
 }
 
 #endif  // AP_CUSTOMCONTROL_Adaptive_ENABLED
