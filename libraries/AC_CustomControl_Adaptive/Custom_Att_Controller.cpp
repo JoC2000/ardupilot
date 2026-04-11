@@ -84,6 +84,21 @@ ddh3        : ddh.z,
     AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
 
+void Custom_Att_Controller::Log_CC4(Vector3f b_h, Vector3f d_bh) const
+{
+    struct log_CC4 pkt = {
+        LOG_PACKET_HEADER_INIT(LOG_CC4_MSG),
+        time_us : AP_HAL::micros64(),
+        bh1     : b_h.x,
+        bh2     : b_h.y,
+        bh3     : b_h.z,
+        dbh1    : d_bh.x,
+        dbh2    : d_bh.y,
+        dbh3    : d_bh.z
+    };
+    AP::logger().WriteBlock(&pkt, sizeof(pkt));
+}
+
 float Custom_Att_Controller::param_projection(float ahat, float dahat, float ahat_min, float ahat_max)
 {
     if (ahat >= ahat_max && dahat > 0.0F) {
@@ -198,6 +213,7 @@ void Custom_Att_Controller::step(
     Log_CC1(w_r, dw_r, w_m, dw_m);
     Log_CC2(w, w_d, s, ys);
     Log_CC3(a_hat, da_hat, d_hat, dd_hat);
+    Log_CC4(b_hat, db_hat);
 }
 
 void Custom_Att_Controller::initialize()

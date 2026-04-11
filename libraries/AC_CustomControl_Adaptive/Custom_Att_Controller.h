@@ -35,6 +35,8 @@ public:
 
     void Log_CC3(Vector3f ah, Vector3f dah, Vector3f dh, Vector3f ddh) const;
 
+    void Log_CC4(Vector3f bh, Vector3f dbh) const;
+
     float param_projection(float a_hat, float da_hat, float ahat_min, float ahat_max);
 
     void reset_ah(Vector3f guesses_ah, Vector3f guesses_dh, Vector3f guesses_bh);
