@@ -55,6 +55,7 @@ private:
     Vector3f w_r, dw_r;
     Vector3f dw_m, w_m;
     Vector3f s, ys;
+    Vector3f s_filt_, s_last_;
     Vector3f controller, adaptation;
     Matrix3f Y;
 };

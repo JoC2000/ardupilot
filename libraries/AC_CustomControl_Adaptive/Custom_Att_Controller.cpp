@@ -136,7 +136,11 @@ void Custom_Att_Controller::step(
 
     // Sliding surface
     // Desired - Actual to match ArduPilot's logic
+    s_last_ = s_filt_;
+
     s = w_r - w;
+
+    s_filt_ += (s - s_last_) * calc_lowpass_alpha_dt(dt, 15.0F);
 
     // Populate Y matrix
     Y.a.x = dw_r.x;         Y.a.y = -(w.y * w.z);   Y.a.z = w.y * w.z;
@@ -156,7 +160,7 @@ void Custom_Att_Controller::step(
     adaptation = Y * a_hat + drag_adaptation;
 
     // Controller contribution Kd * s
-    controller = s;
+    controller = s_filt_;
     controller *= kd_gains;
 
     // Control output
@@ -164,19 +168,19 @@ void Custom_Att_Controller::step(
 
     // Adaptation law
     // da_hat = P*Y^(T)*s
-    ys = Y.transposed() * s;
+    ys = Y.transposed() * s_filt_;
     da_hat = ys;
     da_hat *= p_gains;
 
     // Adaptation for non linear effects
     // dd_hat = P*Y_d^(T)*s
-    dd_hat = s;
+    dd_hat = s_filt_;
     dd_hat *= w;
     dd_hat *= p_gains_d;
 
     // Adaptation for constant disturbance
     // db_hat = P*Y_b(T)*s (Regressor here is identity matrix)
-    db_hat = s;
+    db_hat = s_filt_;
     db_hat *= p_gains_b; 
 
     // Apply param projection to stop adaptation if not necessary
@@ -229,6 +233,8 @@ void Custom_Att_Controller::initialize()
     db_hat.zero();
     controller.zero();
     adaptation.zero();
+    s_filt_.zero();
+    s_last_.zero();
 }
 
 void Custom_Att_Controller::reset_ah(Vector3f guesses_ah, Vector3f guesses_dh, Vector3f guesses_bh)
@@ -236,6 +242,8 @@ void Custom_Att_Controller::reset_ah(Vector3f guesses_ah, Vector3f guesses_dh, V
     a_hat = guesses_ah;
     d_hat = guesses_dh;
     b_hat = guesses_bh;
+    s_filt_.zero();
+    s_last_.zero();
 }
 
 // Constructor
