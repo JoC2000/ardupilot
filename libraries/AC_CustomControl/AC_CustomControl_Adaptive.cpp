@@ -5,6 +5,7 @@
 #include "AC_CustomControl_Adaptive.h"
 
 #include <GCS_MAVLink/GCS.h>
+#include <AC_AttitudeControl/AC_AttitudeControl_Multi.h>
 
 // table of user settable parameters
 const AP_Param::GroupInfo AC_CustomControl_Adaptive::var_info[] = {
@@ -278,6 +279,15 @@ const AP_Param::GroupInfo AC_CustomControl_Adaptive::var_info[] = {
     // @User: Advanced
     AP_GROUPINFO("B_GUESS_Y", 45, AC_CustomControl_Adaptive, bh_guess_y, 0.0F),
 
+    AP_SUBGROUPINFO(_p_angle_roll,  "ANG_RLL_", 46, AC_CustomControl_Adaptive, AC_P),
+    AP_SUBGROUPINFO(_p_angle_pitch, "ANG_PIT_", 47, AC_CustomControl_Adaptive, AC_P),
+    AP_SUBGROUPINFO(_p_angle_yaw,   "ANG_YAW_", 48, AC_CustomControl_Adaptive, AC_P),
+
+    // PID baseline — rate PIDs
+    AP_SUBGROUPINFO(_pid_rate_roll,  "RAT_RLL_", 49, AC_CustomControl_Adaptive, AC_PID),
+    AP_SUBGROUPINFO(_pid_rate_pitch, "RAT_PIT_", 50, AC_CustomControl_Adaptive, AC_PID),
+    AP_SUBGROUPINFO(_pid_rate_yaw,   "RAT_YAW_", 51, AC_CustomControl_Adaptive, AC_PID),
+
     AP_GROUPEND
 };
 
@@ -288,7 +298,13 @@ AC_CustomControl_Adaptive::AC_CustomControl_Adaptive(
     AC_AttitudeControl*& att_control,
     AP_MotorsMulticopter*& motors,
     float dt) :
-    AC_CustomControl_Backend(frontend, ahrs, att_control, motors, dt)
+    AC_CustomControl_Backend(frontend, ahrs, att_control, motors, dt),
+    _p_angle_roll(AC_ATTITUDE_CONTROL_ANGLE_P * 0.9F),
+    _p_angle_pitch(AC_ATTITUDE_CONTROL_ANGLE_P * 0.9F),
+    _p_angle_yaw(AC_ATTITUDE_CONTROL_ANGLE_P * 0.9F),
+    _pid_rate_roll(AC_ATC_MULTI_RATE_RP_P * 0.9F, AC_ATC_MULTI_RATE_RP_I * 0.9F, AC_ATC_MULTI_RATE_RP_D * 0.9F, 0.0f, AC_ATC_MULTI_RATE_RP_IMAX * 0.9F, AC_ATC_MULTI_RATE_RPY_FILT_HZ * 0.9F, 0.0f, AC_ATC_MULTI_RATE_RPY_FILT_HZ * 0.9F),
+    _pid_rate_pitch(AC_ATC_MULTI_RATE_RP_P * 0.9F, AC_ATC_MULTI_RATE_RP_I * 0.9F, AC_ATC_MULTI_RATE_RP_D * 0.9F, 0.0f, AC_ATC_MULTI_RATE_RP_IMAX * 0.9F, AC_ATC_MULTI_RATE_RPY_FILT_HZ * 0.9F, 0.0f, AC_ATC_MULTI_RATE_RPY_FILT_HZ * 0.9F),
+    _pid_rate_yaw(AC_ATC_MULTI_RATE_YAW_P * 0.9F, AC_ATC_MULTI_RATE_YAW_I * 0.9F, AC_ATC_MULTI_RATE_YAW_D * 0.9F, 0.0f, AC_ATC_MULTI_RATE_YAW_IMAX * 0.9F, AC_ATC_MULTI_RATE_RPY_FILT_HZ * 0.9F, AC_ATC_MULTI_RATE_YAW_FILT_HZ * 0.9F, 0.0f)
 {
     _dt = dt;
     AP_Param::setup_object_defaults(this, var_info);
@@ -331,9 +347,9 @@ Vector3f AC_CustomControl_Adaptive::update(void)
     Vector3f ang_vel_body_feedforward = rotation_target_to_body * _att_control->get_attitude_target_ang_vel();
 
     Vector3f target_rate;
-    target_rate[0] = ang_vel_body_feedforward[0];
-    target_rate[1] = ang_vel_body_feedforward[1];
-    target_rate[2] = ang_vel_body_feedforward[2];
+    target_rate[0] = _p_angle_roll.kP() * attitude_error.x + ang_vel_body_feedforward[0];
+    target_rate[1] = _p_angle_pitch.kP() * attitude_error.y + ang_vel_body_feedforward[1];
+    target_rate[2] = _p_angle_yaw.kP() * attitude_error.z + ang_vel_body_feedforward[2];
 
     Vector3f ah_min{ah_min_r.get(), ah_min_p.get(), ah_min_y.get()};
     Vector3f ah_max{ah_max_r.get(), ah_max_p.get(), ah_max_y.get()};
@@ -347,16 +363,26 @@ Vector3f AC_CustomControl_Adaptive::update(void)
     Vector3f p_gains{p_roll.get(), p_pitch.get(), p_yaw.get()};
     Vector3f p_gains_d{p_roll_d.get(), p_pitch_d.get(), p_yaw_d.get()};
     Vector3f p_gains_b{p_roll_b.get(), p_pitch_b.get(), p_yaw_b.get()};
+    
     Vector3f gyro_latest = _ahrs->get_gyro_latest();
     Vector3f motor_out;
+    Vector3f U_pid;
 
+    U_pid.x = _pid_rate_roll.update_all(target_rate[0], gyro_latest[0], _dt, false);
+    U_pid.y = _pid_rate_pitch.update_all(target_rate[1], gyro_latest[1], _dt, false);
+    U_pid.z = _pid_rate_yaw.update_all(target_rate[2], gyro_latest[2], _dt, false);
+
+    Vector3f U_adaptive;
     adaptive_controller.step(
-                            target_rate, gyro_latest, motor_out, attitude_error, _dt,
-                            ah_min, ah_max, lambdas_model, lambdas_sliding, kd_gains,
+                            target_rate, gyro_latest, U_adaptive, _dt,
+                            ah_min, ah_max, lambdas_model, kd_gains,
                             p_gains, p_gains_d, dh_min, dh_max, p_gains_b, bh_min, bh_max);
 
-    // return what arducopter main controller outputted
-    return motor_out;
+    Vector3f U_total = U_pid + U_adaptive;
+
+    adaptive_controller.Log_CC0(U_total, U_pid, U_adaptive, target_rate);
+
+    return U_total;
 }
 
 // reset controller to avoid build up on the ground
@@ -367,6 +393,22 @@ void AC_CustomControl_Adaptive::reset(void)
     Vector3f guesses_dh{dh_guess_r.get(), dh_guess_p.get(), dh_guess_y.get()};
     Vector3f guesses_bh{bh_guess_r.get(), bh_guess_p.get(), bh_guess_y.get()};
     adaptive_controller.reset_ah(guesses_ah, guesses_dh, guesses_bh);
+
+    _pid_rate_roll.reset_I();
+    _pid_rate_pitch.reset_I();
+    _pid_rate_yaw.reset_I();
+    _pid_rate_roll.reset_filter();
+    _pid_rate_pitch.reset_filter();
+    _pid_rate_yaw.reset_filter();
+}
+
+void AC_CustomControl_Adaptive::set_notch_sample_rate(float sample_rate)
+{
+#if AP_FILTER_ENABLED
+    _pid_rate_roll.set_notch_sample_rate(sample_rate);
+    _pid_rate_pitch.set_notch_sample_rate(sample_rate);
+    _pid_rate_yaw.set_notch_sample_rate(sample_rate);
+#endif
 }
 
 #endif  // AP_CUSTOMCONTROL_Adaptive_ENABLED

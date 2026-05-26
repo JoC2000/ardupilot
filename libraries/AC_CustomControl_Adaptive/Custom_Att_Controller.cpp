@@ -1,22 +1,22 @@
 #include "Custom_Att_Controller.h"
 
-void Custom_Att_Controller::Log_CC0(Vector3f U, Vector3f control, Vector3f adapt, Vector3f error) const
+void Custom_Att_Controller::Log_CC0(Vector3f U_total, Vector3f U_pid, Vector3f U_adaptive, Vector3f att_err) const
 {
     struct log_CC0 pkt = {
         LOG_PACKET_HEADER_INIT(LOG_CC0_MSG),
 time_us     : AP_HAL::micros64(),
-u_roll      : U.x,
-u_pitch     : U.y,
-u_yaw       : U.z,
-control_r   : control.x,
-control_p   : control.y,
-control_y   : control.z,
-adapt_r     : adapt.x,
-adapt_p     : adapt.y,
-adapt_y     : adapt.z,
-err1        : degrees(error.x),
-err2        : degrees(error.y),
-err3        : degrees(error.z)
+u_r         : U_total.x,
+u_p         : U_total.y,
+u_y         : U_total.z,
+pid_r       : U_pid.x,
+pid_p       : U_pid.y,
+pid_y       : U_pid.z,
+adapt_r     : U_adaptive.x,
+adapt_p     : U_adaptive.y,
+adapt_y     : U_adaptive.z,
+err1        : degrees(att_err.x),
+err2        : degrees(att_err.y),
+err3        : degrees(att_err.z)
     };
     AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
@@ -111,8 +111,8 @@ float Custom_Att_Controller::param_projection(float ahat, float dahat, float aha
 }
 
 void Custom_Att_Controller::step(
-    Vector3f w_d, Vector3f w, Vector3f &U, Vector3f att_error, float dt, Vector3f ah_min,
-    Vector3f ah_max, Vector3f lambdas_model, Vector3f lambdas_sliding, Vector3f kd_gains, 
+    Vector3f w_d, Vector3f w, Vector3f &U_adaptive, float dt, Vector3f ah_min,
+    Vector3f ah_max, Vector3f lambdas_model, Vector3f kd_gains, 
     Vector3f p_gains, Vector3f p_gains_d, Vector3f dh_min, Vector3f dh_max, Vector3f p_gains_b, Vector3f bh_min, Vector3f bh_max)
 {
     Y.zero();
@@ -122,17 +122,12 @@ void Custom_Att_Controller::step(
     dw_m *= lambdas_model;
     w_m += dw_m * dt;
 
-    // Virtual controller reference, includes velocity and attitude targets
-    // xr = x_m + (lambda * error)
-    Vector3f ls_att = att_error;
-    ls_att *= lambdas_sliding;
-    w_r = w_m + ls_att;
+    // Virtual reference
+    w_r = w_m;
 
     // Derivate of the virtual reference, the acceleration reference of the reference model
     // dxr = dx_m + (lambda * derror) 
-    Vector3f ls_diff = w_m - w;
-    ls_diff *= lambdas_sliding;
-    dw_r = dw_m + ls_diff;
+    dw_r = dw_m;
 
     // Sliding surface
     // Desired - Actual to match ArduPilot's logic
@@ -159,12 +154,8 @@ void Custom_Att_Controller::step(
     // Sum of system and drag adaptation
     adaptation = Y * a_hat + drag_adaptation;
 
-    // Controller contribution Kd * s
-    controller = s_filt_;
-    controller *= kd_gains;
-
     // Control output
-    U = adaptation + controller + b_hat;
+    U_adaptive = adaptation + b_hat;
 
     // Adaptation law
     // da_hat = P*Y^(T)*s
@@ -213,7 +204,6 @@ void Custom_Att_Controller::step(
     b_hat.z = constrain_float(b_hat.z, bh_min.z, bh_max.z);
 
     // Log debug variables
-    Log_CC0(U, controller, adaptation, att_error);
     Log_CC1(w_r, dw_r, w_m, dw_m);
     Log_CC2(w, w_d, s, ys);
     Log_CC3(a_hat, da_hat, d_hat, dd_hat);

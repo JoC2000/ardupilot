@@ -17,12 +17,12 @@
 struct PACKED log_CC0 {
     LOG_PACKET_HEADER;
     uint64_t time_us;
-    float u_roll;
-    float u_pitch;
-    float u_yaw;
-    float control_r;
-    float control_p;
-    float control_y;
+    float u_r;
+    float u_p;
+    float u_y;
+    float pid_r;
+    float pid_p;
+    float pid_y;
     float adapt_r;
     float adapt_p;
     float adapt_y;
@@ -101,7 +101,7 @@ struct PACKED log_CC4 {
 
 #define LOG_STRUCTURE_FROM_CC \
     { LOG_CC0_MSG, sizeof(log_CC0), \
-        "CCL0", "Qffffffffffff", "TimeUS,U1,U2,U3,c_r,c_p,c_y,ad_r,ad_p,ad_y,e1,e2,e3", "s------------", "F------------" , true}, \
+        "CCL0", "Qffffffffffff", "TimeUS,U1,U2,U3,pid_r,pid_p,pid_y,ad_r,ad_p,ad_y,e1,e2,e3", "s------------", "F------------" , true}, \
     { LOG_CC1_MSG, sizeof(log_CC1), \
         "CCL1", "Qffffffffffff", "TimeUS,wr1,wr2,wr3,dwr1,dwr2,dwr3,wm1,wm2,wm3,dwm1,dwm2,dwm3", "s------------", "F------------", true}, \
     { LOG_CC2_MSG, sizeof(log_CC2), \

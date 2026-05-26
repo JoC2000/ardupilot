@@ -23,11 +23,11 @@ public:
     void initialize();
 
     // Controller step function
-    void step(Vector3f w_d, Vector3f w, Vector3f &U, Vector3f att_error, float dt,
-              Vector3f ah_min, Vector3f ah_max, Vector3f lambdas_model, Vector3f lambdas_sliding,
+    void step(Vector3f w_d, Vector3f w, Vector3f &U_adaptive, float dt,
+              Vector3f ah_min, Vector3f ah_max, Vector3f lambdas_model,
               Vector3f kd_gains, Vector3f p_gains, Vector3f p_gains_d, Vector3f dh_min, Vector3f dh_max, Vector3f p_gains_b ,Vector3f bh_min, Vector3f bh_max);
 
-    void Log_CC0(Vector3f U, Vector3f controller, Vector3f adaptation, Vector3f att_error) const;
+    void Log_CC0(Vector3f U_total, Vector3f U_pid, Vector3f U_adaptive, Vector3f att_err) const;
 
     void Log_CC1(Vector3f wr, Vector3f d_wr, Vector3f wm, Vector3f dwm) const;
 
