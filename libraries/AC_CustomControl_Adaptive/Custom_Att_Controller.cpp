@@ -117,17 +117,10 @@ void Custom_Att_Controller::step(
 {
     Y.zero();
 
-    // Reference model
-    dw_m = w_d - w_m;
-    dw_m *= lambdas_model;
-    w_m += dw_m * dt;
-
     // Virtual reference
-    w_r = w_m;
-
-    // Derivate of the virtual reference, the acceleration reference of the reference model
-    // dxr = dx_m + (lambda * derror) 
-    dw_r = dw_m;
+    dw_r = w_d - w_r;
+    dw_r *= lambdas_model;
+    w_r += dw_r * dt;
 
     // Sliding surface
     // Desired - Actual to match ArduPilot's logic
@@ -138,9 +131,9 @@ void Custom_Att_Controller::step(
     s_filt_ += (s - s_last_) * calc_lowpass_alpha_dt(dt, 15.0F);
 
     // Populate Y matrix
-    Y.a.x = dw_r.x;         Y.a.y = -(w.y * w.z);   Y.a.z = w.y * w.z;
-    Y.b.x = w.x * w.z;      Y.b.y = dw_r.y;         Y.b.z = -(w.x * w.z);
-    Y.c.x = -(w.x * w.y);   Y.c.y = w.x * w.y;      Y.c.z = dw_r.z;
+    Y.a.x = dw_r.x;           Y.a.y = -(w.y * w_r.z);   Y.a.z = w_r.y * w.z;
+    Y.b.x = w.x * w_r.z;      Y.b.y = dw_r.y;           Y.b.z = -(w_r.x * w.z);
+    Y.c.x = -(w.x * w_r.y);   Y.c.y = w_r.x * w.y;      Y.c.z = dw_r.z;
 
     // Populate Yd matrix
     // Yd matrix is a diagonal matrix that contains wx,wy and wz.
