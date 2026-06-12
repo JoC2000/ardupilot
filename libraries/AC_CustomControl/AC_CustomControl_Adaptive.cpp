@@ -380,7 +380,7 @@ Vector3f AC_CustomControl_Adaptive::update(void)
 
     Vector3f U_total = U_pid + U_adaptive;
 
-    adaptive_controller.Log_CC0(U_total, U_pid, U_adaptive, target_rate);
+    adaptive_controller.Log_CC0(U_total, U_pid, U_adaptive, attitude_error);
 
     return U_total;
 }

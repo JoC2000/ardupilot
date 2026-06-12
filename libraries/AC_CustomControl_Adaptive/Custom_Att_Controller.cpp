@@ -4,82 +4,67 @@ void Custom_Att_Controller::Log_CC0(Vector3f U_total, Vector3f U_pid, Vector3f U
 {
     struct log_CC0 pkt = {
         LOG_PACKET_HEADER_INIT(LOG_CC0_MSG),
-time_us     : AP_HAL::micros64(),
-u_r         : U_total.x,
-u_p         : U_total.y,
-u_y         : U_total.z,
-pid_r       : U_pid.x,
-pid_p       : U_pid.y,
-pid_y       : U_pid.z,
-adapt_r     : U_adaptive.x,
-adapt_p     : U_adaptive.y,
-adapt_y     : U_adaptive.z,
-err1        : degrees(att_err.x),
-err2        : degrees(att_err.y),
-err3        : degrees(att_err.z)
+        time_us     : AP_HAL::micros64(),
+        u_r         : U_total.x,
+        u_p         : U_total.y,
+        u_y         : U_total.z,
+        pid_r       : U_pid.x,
+        pid_p       : U_pid.y,
+        pid_y       : U_pid.z,
+        adapt_r     : U_adaptive.x,
+        adapt_p     : U_adaptive.y,
+        adapt_y     : U_adaptive.z,
+        err_r       : degrees(att_err.x),
+        err_p       : degrees(att_err.y),
+        err_y       : degrees(att_err.z)
     };
     AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
 
-void Custom_Att_Controller::Log_CC1(Vector3f wr, Vector3f dwr, Vector3f wm, Vector3f d_wm) const
+void Custom_Att_Controller::Log_CC1(Vector3f wr, Vector3f dwr) const
 {
     struct log_CC1 pkt = {
         LOG_PACKET_HEADER_INIT(LOG_CC1_MSG),
-time_us     : AP_HAL::micros64(),
-wr1         : degrees(wr.x),
-wr2         : degrees(wr.y),
-wr3         : degrees(wr.z),
-dwr1        : degrees(dwr.x),
-dwr2        : degrees(dwr.y),
-dwr3        : degrees(dwr.z),
-wm1         : degrees(wm.x),
-wm2         : degrees(wm.y),
-wm3         : degrees(wm.z),
-dwm1        : degrees(d_wm.x),
-dwm2        : degrees(d_wm.y),
-dwm3        : degrees(d_wm.z)
+        time_us     : AP_HAL::micros64(),
+        wr_r        : degrees(wr.x),
+        wr_p        : degrees(wr.y),
+        wr_y        : degrees(wr.z),
+        dwr_r       : degrees(dwr.x),
+        dwr_p       : degrees(dwr.y),
+        dwr_y       : degrees(dwr.z)
     };
     AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
 
-void Custom_Att_Controller::Log_CC2(Vector3f w_, Vector3f wd, Vector3f s_, Vector3f ys_) const
+void Custom_Att_Controller::Log_CC2(Vector3f s_, Vector3f ah, Vector3f dah) const
 {
     struct log_CC2 pkt = {
         LOG_PACKET_HEADER_INIT(LOG_CC2_MSG),
-time_us     : AP_HAL::micros64(),
-w1          : degrees(w_.x),
-w2          : degrees(w_.y),
-w3          : degrees(w_.z),
-wd1         : degrees(wd.x),
-wd2         : degrees(wd.y),
-wd3         : degrees(wd.z),
-s_roll      : degrees(s_.x),
-s_pitch     : degrees(s_.y),
-s_yaw       : degrees(s_.z),
-ys1         : ys_.x,
-ys2         : ys_.y,
-ys3         : ys_.z
+        time_us     : AP_HAL::micros64(),
+        s_r         : degrees(s_.x),
+        s_p         : degrees(s_.y),
+        s_y         : degrees(s_.z),
+        ah_r        : ah.x,
+        ah_p        : ah.y,
+        ah_y        : ah.z,
+        dah_r       : dah.x,
+        dah_p       : dah.y,
+        dah_y       : dah.z
     };
     AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
 
-void Custom_Att_Controller::Log_CC3(Vector3f ah, Vector3f dah, Vector3f dh, Vector3f ddh) const
+void Custom_Att_Controller::Log_CC3(Vector3f dh, Vector3f ddh) const
 {
     struct log_CC3 pkt = {
         LOG_PACKET_HEADER_INIT(LOG_CC3_MSG),
-time_us     : AP_HAL::micros64(),
-ah1         : ah.x,
-ah2         : ah.y,
-ah3         : ah.z,
-dah1        : dah.x,
-dah2        : dah.y,
-dah3        : dah.z,
-dh1         : dh.x,
-dh2         : dh.y,
-dh3         : dh.z,
-ddh1        : ddh.x,
-ddh2        : ddh.y,
-ddh3        : ddh.z,
+        time_us     : AP_HAL::micros64(),
+        dh_r         : dh.x,
+        dh_p         : dh.y,
+        dh_y         : dh.z,
+        ddh_r        : ddh.x,
+        ddh_p        : ddh.y,
+        ddh_y        : ddh.z
     };
     AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
@@ -89,12 +74,12 @@ void Custom_Att_Controller::Log_CC4(Vector3f b_h, Vector3f d_bh) const
     struct log_CC4 pkt = {
         LOG_PACKET_HEADER_INIT(LOG_CC4_MSG),
         time_us : AP_HAL::micros64(),
-        bh1     : b_h.x,
-        bh2     : b_h.y,
-        bh3     : b_h.z,
-        dbh1    : d_bh.x,
-        dbh2    : d_bh.y,
-        dbh3    : d_bh.z
+        bh_r     : b_h.x,
+        bh_p     : b_h.y,
+        bh_y     : b_h.z,
+        dbh_r    : d_bh.x,
+        dbh_p    : d_bh.y,
+        dbh_y    : d_bh.z
     };
     AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
@@ -197,9 +182,9 @@ void Custom_Att_Controller::step(
     b_hat.z = constrain_float(b_hat.z, bh_min.z, bh_max.z);
 
     // Log debug variables
-    Log_CC1(w_r, dw_r, w_m, dw_m);
-    Log_CC2(w, w_d, s, ys);
-    Log_CC3(a_hat, da_hat, d_hat, dd_hat);
+    Log_CC1(w_r, dw_r);
+    Log_CC2(s, a_hat, da_hat);
+    Log_CC3(d_hat, dd_hat);
     Log_CC4(b_hat, db_hat);
 }
 

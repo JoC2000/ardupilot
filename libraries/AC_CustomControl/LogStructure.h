@@ -26,9 +26,9 @@ struct PACKED log_CC0 {
     float adapt_r;
     float adapt_p;
     float adapt_y;
-    float err1;
-    float err2;
-    float err3;
+    float err_r;
+    float err_p;
+    float err_y;
 };
 
 // @LoggerMessage: CC1
@@ -36,18 +36,12 @@ struct PACKED log_CC0 {
 struct PACKED log_CC1 {
     LOG_PACKET_HEADER;
     uint64_t time_us;
-    float wr1;
-    float wr2;
-    float wr3;
-    float dwr1;
-    float dwr2;
-    float dwr3;
-    float wm1;
-    float wm2;
-    float wm3;
-    float dwm1;
-    float dwm2;
-    float dwm3;
+    float wr_r;
+    float wr_p;
+    float wr_y;
+    float dwr_r;
+    float dwr_p;
+    float dwr_y;
 };
 
 // @LoggerMessage: CC2
@@ -55,18 +49,15 @@ struct PACKED log_CC1 {
 struct PACKED log_CC2 {
     LOG_PACKET_HEADER;
     uint64_t time_us;
-    float w1;
-    float w2;
-    float w3;
-    float wd1;
-    float wd2;
-    float wd3;
-    float s_roll;
-    float s_pitch;
-    float s_yaw;
-    float ys1;
-    float ys2;
-    float ys3;
+    float s_r;
+    float s_p;
+    float s_y;
+    float ah_r;
+    float ah_p;
+    float ah_y;
+    float dah_r;
+    float dah_p;
+    float dah_y;
 };
 
 // @LoggerMessage: CC3
@@ -74,42 +65,36 @@ struct PACKED log_CC2 {
 struct PACKED log_CC3 {
     LOG_PACKET_HEADER;
     uint64_t time_us;
-    float ah1;
-    float ah2;
-    float ah3;
-    float dah1;
-    float dah2;
-    float dah3;
-    float dh1;
-    float dh2;
-    float dh3;
-    float ddh1;
-    float ddh2;
-    float ddh3;
+    float dh_r;
+    float dh_p;
+    float dh_y;
+    float ddh_r;
+    float ddh_p;
+    float ddh_y;
 };
 
 struct PACKED log_CC4 {
     LOG_PACKET_HEADER;
     uint64_t time_us;
-    float bh1;
-    float bh2;
-    float bh3;
-    float dbh1;
-    float dbh2;
-    float dbh3;
+    float bh_r;
+    float bh_p;
+    float bh_y;
+    float dbh_r;
+    float dbh_p;
+    float dbh_y;
 };
 
 #define LOG_STRUCTURE_FROM_CC \
     { LOG_CC0_MSG, sizeof(log_CC0), \
-        "CCL0", "Qffffffffffff", "TimeUS,U1,U2,U3,pid_r,pid_p,pid_y,ad_r,ad_p,ad_y,e1,e2,e3", "s------------", "F------------" , true}, \
+        "CCL0", "Qffffffffffff", "TimeUS,U_r,U_p,U_y,pd_r,pd_p,pd_y,ad_r,ad_p,ad_y,e_r,e_p,e_y", "s------------", "F------------" , true}, \
     { LOG_CC1_MSG, sizeof(log_CC1), \
-        "CCL1", "Qffffffffffff", "TimeUS,wr1,wr2,wr3,dwr1,dwr2,dwr3,wm1,wm2,wm3,dwm1,dwm2,dwm3", "s------------", "F------------", true}, \
+        "CCL1", "Qffffff", "TimeUS,wr_r,wr_p,wr_y,dwr_r,dwr_p,dwr_y", "s------", "F------", true}, \
     { LOG_CC2_MSG, sizeof(log_CC2), \
-        "CCL2", "Qffffffffffff", "TimeUS,w1,w2,w3,wd1,wd2,wd3,s1,s2,s3,ys1,ys2,ys3", "s------------", "F------------", true}, \
+        "CCL2", "Qfffffffff", "TimeUS,s_r,s_p,s_y,ah_r,ah_p,ah_y,dah_r,dah_p,dah_y", "s---------", "F---------", true}, \
     { LOG_CC3_MSG, sizeof(log_CC3), \
-        "CCL3", "Qffffffffffff", "TimeUS,ah1,ah2,ah3,dah1,dah2,dah3,dh1,dh2,dh3,ddh1,ddh2,ddh3", "s------------", "F------------", true}, \
+        "CCL3", "Qffffff", "TimeUS,dh_r,dh_p,dh_y,ddh_r,ddh_p,ddh_y", "s------", "F------", true}, \
     { LOG_CC4_MSG, sizeof(log_CC4), \
-        "CCL4", "Qffffff", "TimeUS,bh1,bh2,bh3,dbh1,dbh2,dbh3", "s------", "F------", true}, 
+        "CCL4", "Qffffff", "TimeUS,bh_r,bh_p,bh_y,dbh_r,dbh_p,dbh_y", "s------", "F------", true}, 
 #else
 #define LOG_STRUCTURE_FROM_CC
 #endif
