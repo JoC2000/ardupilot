@@ -110,6 +110,20 @@ float Custom_Att_Controller::param_projection(float ahat, float dahat, float aha
     }
 }
 
+float Custom_Att_Controller::saturate(float u, float limit, float &sat_dir)
+{
+    if (u > limit) {
+        sat_dir = 1.0F;
+        return limit;
+    } else if (u < -limit) {
+        sat_dir = -1.0F;
+        return -limit;
+    } else {
+        sat_dir = 0.0F;
+        return u;
+    }
+}
+
 void Custom_Att_Controller::step(
     Vector3f w_d, Vector3f w, Vector3f &U, Vector3f att_error, float dt, Vector3f ah_min,
     Vector3f ah_max, Vector3f lambdas_model, Vector3f lambdas_sliding, Vector3f kd_gains, 
@@ -163,8 +177,14 @@ void Custom_Att_Controller::step(
     controller = s_filt_;
     controller *= kd_gains;
 
-    // Control output
-    U = adaptation + controller + b_hat;
+    // Control output, before saturation
+    u_unsat = adaptation + controller + b_hat;
+
+    // Saturate to the normalized mixer range. AP_Motors::set_roll/pitch/yaw
+    // store the value verbatim, nothing downstream clamps it.
+    U.x = saturate(u_unsat.x, U_LIMIT, sat.x);
+    U.y = saturate(u_unsat.y, U_LIMIT, sat.y);
+    U.z = saturate(u_unsat.z, U_LIMIT, sat.z);
 
     // Adaptation law
     // da_hat = P*Y^(T)*s
@@ -235,6 +255,8 @@ void Custom_Att_Controller::initialize()
     adaptation.zero();
     s_filt_.zero();
     s_last_.zero();
+    u_unsat.zero();
+    sat.zero();
 }
 
 void Custom_Att_Controller::reset_ah(Vector3f guesses_ah, Vector3f guesses_dh, Vector3f guesses_bh)

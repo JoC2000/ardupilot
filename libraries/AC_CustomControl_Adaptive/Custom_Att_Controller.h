@@ -39,6 +39,10 @@ public:
 
     float param_projection(float a_hat, float da_hat, float ahat_min, float ahat_max);
 
+    // Saturate one axis to the normalized mixer range, reporting the
+    // direction of saturation (-1, 0, +1) for the adaptation law to consume.
+    float saturate(float u, float limit, float &sat_dir);
+
     void reset_ah(Vector3f guesses_ah, Vector3f guesses_dh, Vector3f guesses_bh);
 
     // Constructor
@@ -49,6 +53,9 @@ public:
 
     // private data and function members
 private:
+    // AP_Motors::set_roll/pitch/yaw take normalized torque in -1..+1
+    static constexpr float U_LIMIT = 1.0F;
+
     Vector3f a_hat, da_hat;
     Vector3f b_hat, db_hat;
     Vector3f d_hat, dd_hat;
@@ -57,5 +64,7 @@ private:
     Vector3f s, ys;
     Vector3f s_filt_, s_last_;
     Vector3f controller, adaptation;
+    Vector3f u_unsat;   // control demand before saturation
+    Vector3f sat;       // per-axis saturation direction: -1, 0 or +1
     Matrix3f Y;
 };
