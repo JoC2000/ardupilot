@@ -124,6 +124,17 @@ float Custom_Att_Controller::saturate(float u, float limit, float &sat_dir)
     }
 }
 
+float Custom_Att_Controller::sat_projection(float s_axis, float sat_dir)
+{
+    if (sat_dir > 0.0F && s_axis > 0.0F) {
+        return 0.0F;
+    } else if (sat_dir < 0.0F && s_axis < 0.0F) {
+        return 0.0F;
+    } else {
+        return s_axis;
+    }
+}
+
 void Custom_Att_Controller::step(
     Vector3f w_d, Vector3f w, Vector3f &U, Vector3f att_error, float dt, Vector3f ah_min,
     Vector3f ah_max, Vector3f lambdas_model, Vector3f lambdas_sliding, Vector3f kd_gains, 
@@ -186,21 +197,32 @@ void Custom_Att_Controller::step(
     U.y = saturate(u_unsat.y, U_LIMIT, sat.y);
     U.z = saturate(u_unsat.z, U_LIMIT, sat.z);
 
+    // Adaptation input: the sliding surface with the saturated axes removed.
+    // Under saturation the plant never sees u_unsat, so the Lyapunov argument
+    // no longer holds and the estimates would wind up against their box
+    // limits. Freezing here covers all three adaptation laws at once, and
+    // leaves the cross-coupled a_hat update learning from the axes that still
+    // have authority. The feedback term keeps using the full s_filt_ so it
+    // still commands maximum effort out of the saturation.
+    s_adapt.x = sat_projection(s_filt_.x, sat.x);
+    s_adapt.y = sat_projection(s_filt_.y, sat.y);
+    s_adapt.z = sat_projection(s_filt_.z, sat.z);
+
     // Adaptation law
     // da_hat = P*Y^(T)*s
-    ys = Y.transposed() * s_filt_;
+    ys = Y.transposed() * s_adapt;
     da_hat = ys;
     da_hat *= p_gains;
 
     // Adaptation for non linear effects
     // dd_hat = P*Y_d^(T)*s
-    dd_hat = s_filt_;
+    dd_hat = s_adapt;
     dd_hat *= w;
     dd_hat *= p_gains_d;
 
     // Adaptation for constant disturbance
     // db_hat = P*Y_b(T)*s (Regressor here is identity matrix)
-    db_hat = s_filt_;
+    db_hat = s_adapt;
     db_hat *= p_gains_b; 
 
     // Apply param projection to stop adaptation if not necessary
@@ -257,6 +279,7 @@ void Custom_Att_Controller::initialize()
     s_last_.zero();
     u_unsat.zero();
     sat.zero();
+    s_adapt.zero();
 }
 
 void Custom_Att_Controller::reset_ah(Vector3f guesses_ah, Vector3f guesses_dh, Vector3f guesses_bh)

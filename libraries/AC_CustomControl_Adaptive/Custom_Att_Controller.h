@@ -43,6 +43,11 @@ public:
     // direction of saturation (-1, 0, +1) for the adaptation law to consume.
     float saturate(float u, float limit, float &sat_dir);
 
+    // Zero one axis of the sliding surface while the actuator is saturated in
+    // the direction the error is pushing. Same shape as param_projection, but
+    // the boundary is the actuator rather than the parameter box.
+    float sat_projection(float s_axis, float sat_dir);
+
     void reset_ah(Vector3f guesses_ah, Vector3f guesses_dh, Vector3f guesses_bh);
 
     // Constructor
@@ -66,5 +71,6 @@ private:
     Vector3f controller, adaptation;
     Vector3f u_unsat;   // control demand before saturation
     Vector3f sat;       // per-axis saturation direction: -1, 0 or +1
+    Vector3f s_adapt;   // sliding surface driving adaptation, saturated axes removed
     Matrix3f Y;
 };
