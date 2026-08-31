@@ -155,7 +155,7 @@ void Custom_Att_Controller::step(
 
     // Derivate of the virtual reference, the acceleration reference of the reference model
     // dxr = dx_m + (lambda * derror) 
-    Vector3f ls_diff = w_m - w;
+    Vector3f ls_diff = w_d - w;
     ls_diff *= lambdas_sliding;
     dw_r = dw_m + ls_diff;
 
