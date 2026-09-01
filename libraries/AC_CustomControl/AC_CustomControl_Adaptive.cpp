@@ -278,6 +278,30 @@ const AP_Param::GroupInfo AC_CustomControl_Adaptive::var_info[] = {
     // @User: Advanced
     AP_GROUPINFO("B_GUESS_Y", 45, AC_CustomControl_Adaptive, bh_guess_y, 0.0F),
 
+    // @Param: S_FILT_R
+    // @DisplayName: S_FILT_R
+    // @Description: Low pass cutoff for the roll sliding surface, zero disables the filter
+    // @Range: 0 100
+    // @Units: Hz
+    // @User: Advanced
+    AP_GROUPINFO("S_FILT_R", 46, AC_CustomControl_Adaptive, s_filt_r, 15.0F),
+
+    // @Param: S_FILT_P
+    // @DisplayName: S_FILT_P
+    // @Description: Low pass cutoff for the pitch sliding surface, zero disables the filter
+    // @Range: 0 100
+    // @Units: Hz
+    // @User: Advanced
+    AP_GROUPINFO("S_FILT_P", 47, AC_CustomControl_Adaptive, s_filt_p, 15.0F),
+
+    // @Param: S_FILT_Y
+    // @DisplayName: S_FILT_Y
+    // @Description: Low pass cutoff for the yaw sliding surface, zero disables the filter
+    // @Range: 0 100
+    // @Units: Hz
+    // @User: Advanced
+    AP_GROUPINFO("S_FILT_Y", 48, AC_CustomControl_Adaptive, s_filt_y, 15.0F),
+
     AP_GROUPEND
 };
 
@@ -347,13 +371,15 @@ Vector3f AC_CustomControl_Adaptive::update(void)
     Vector3f p_gains{p_roll.get(), p_pitch.get(), p_yaw.get()};
     Vector3f p_gains_d{p_roll_d.get(), p_pitch_d.get(), p_yaw_d.get()};
     Vector3f p_gains_b{p_roll_b.get(), p_pitch_b.get(), p_yaw_b.get()};
+    Vector3f s_filt_hz{s_filt_r.get(), s_filt_p.get(), s_filt_y.get()};
     Vector3f gyro_latest = _ahrs->get_gyro_latest();
     Vector3f motor_out;
 
     adaptive_controller.step(
                             target_rate, gyro_latest, motor_out, attitude_error, _dt,
                             ah_min, ah_max, lambdas_model, lambdas_sliding, kd_gains,
-                            p_gains, p_gains_d, dh_min, dh_max, p_gains_b, bh_min, bh_max);
+                            p_gains, p_gains_d, dh_min, dh_max, p_gains_b, bh_min, bh_max,
+                            s_filt_hz);
 
     // return what arducopter main controller outputted
     return motor_out;

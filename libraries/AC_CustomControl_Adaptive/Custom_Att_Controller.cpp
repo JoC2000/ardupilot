@@ -138,7 +138,8 @@ float Custom_Att_Controller::sat_projection(float s_axis, float sat_dir)
 void Custom_Att_Controller::step(
     Vector3f w_d, Vector3f w, Vector3f &U, Vector3f att_error, float dt, Vector3f ah_min,
     Vector3f ah_max, Vector3f lambdas_model, Vector3f lambdas_sliding, Vector3f kd_gains, 
-    Vector3f p_gains, Vector3f p_gains_d, Vector3f dh_min, Vector3f dh_max, Vector3f p_gains_b, Vector3f bh_min, Vector3f bh_max)
+    Vector3f p_gains, Vector3f p_gains_d, Vector3f dh_min, Vector3f dh_max, Vector3f p_gains_b, Vector3f bh_min, Vector3f bh_max,
+    Vector3f s_filt_hz)
 {
     Y.zero();
 
@@ -165,7 +166,15 @@ void Custom_Att_Controller::step(
 
     s = w_r - w;
 
-    s_filt_ += (s - s_last_) * calc_lowpass_alpha_dt(dt, 15.0F);
+    // Per axis low pass. calc_lowpass_alpha_dt returns 1.0 for a zero cutoff,
+    // so a cutoff of zero passes the surface through unfiltered.
+    Vector3f s_alpha{calc_lowpass_alpha_dt(dt, s_filt_hz.x),
+                     calc_lowpass_alpha_dt(dt, s_filt_hz.y),
+                     calc_lowpass_alpha_dt(dt, s_filt_hz.z)};
+
+    Vector3f ds = s - s_last_;
+    ds *= s_alpha;
+    s_filt_ += ds;
 
     // Populate Y matrix
     Y.a.x = dw_r.x;         Y.a.y = -(w.y * w.z);   Y.a.z = w.y * w.z;

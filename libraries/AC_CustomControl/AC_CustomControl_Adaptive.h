@@ -42,6 +42,7 @@ protected:
     AP_Float bh_guess_r, bh_guess_p, bh_guess_y;
     AP_Float bh_min_r, bh_min_p, bh_min_y;
     AP_Float bh_max_r, bh_max_p, bh_max_y;
+    AP_Float s_filt_r, s_filt_p, s_filt_y;
 };
 
 #endif  // AP_CUSTOMCONTROL_ADAPTIVE_ENABLED

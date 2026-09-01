@@ -25,7 +25,8 @@ public:
     // Controller step function
     void step(Vector3f w_d, Vector3f w, Vector3f &U, Vector3f att_error, float dt,
               Vector3f ah_min, Vector3f ah_max, Vector3f lambdas_model, Vector3f lambdas_sliding,
-              Vector3f kd_gains, Vector3f p_gains, Vector3f p_gains_d, Vector3f dh_min, Vector3f dh_max, Vector3f p_gains_b ,Vector3f bh_min, Vector3f bh_max);
+              Vector3f kd_gains, Vector3f p_gains, Vector3f p_gains_d, Vector3f dh_min, Vector3f dh_max, Vector3f p_gains_b ,Vector3f bh_min, Vector3f bh_max,
+              Vector3f s_filt_hz);
 
     void Log_CC0(Vector3f U, Vector3f controller, Vector3f adaptation, Vector3f att_error) const;
 
