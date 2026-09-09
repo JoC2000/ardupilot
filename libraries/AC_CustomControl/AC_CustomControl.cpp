@@ -5,8 +5,9 @@
 #if AP_CUSTOMCONTROL_ENABLED
 
 #include "AC_CustomControl_Backend.h"
-// #include "AC_CustomControl_Empty.h"
+#include "AC_CustomControl_Empty.h"
 #include "AC_CustomControl_PID.h"
+#include "AC_CustomControl_Adaptive.h"
 #include <GCS_MAVLink/GCS.h>
 #include <AP_Logger/AP_Logger.h>
 #include <AP_Scheduler/AP_Scheduler.h>
@@ -34,6 +35,9 @@ const AP_Param::GroupInfo AC_CustomControl::var_info[] = {
     // @Group: 2_
     // @Path: AC_CustomControl_PID.cpp
     AP_SUBGROUPVARPTR(_backend, "2_", 7, AC_CustomControl, _backend_var_info[1]),
+
+    // parameters for adaptive controller
+    AP_SUBGROUPVARPTR(_backend, "3_", 8, AC_CustomControl, _backend_var_info[2]),
 
     AP_GROUPEND
 };
@@ -64,6 +68,10 @@ void AC_CustomControl::init(void)
         case CustomControlType::CONT_PID:
             _backend = NEW_NOTHROW AC_CustomControl_PID(*this, _ahrs, _att_control, _motors, _dt);
             _backend_var_info[get_type()] = AC_CustomControl_PID::var_info;
+            break;
+        case CustomControlType::CONT_ADAPTIVE:
+            _backend = NEW_NOTHROW AC_CustomControl_Adaptive(*this, _ahrs, _att_control, _motors, _dt);
+            _backend_var_info[get_type()] = AC_CustomControl_Adaptive::var_info;
             break;
         default:
             return;
