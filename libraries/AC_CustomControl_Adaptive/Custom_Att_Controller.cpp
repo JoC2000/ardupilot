@@ -102,10 +102,12 @@ void Custom_Att_Controller::step(
 {
     Y.zero();
 
+    w_r = w_d;
+
     // Virtual reference
-    dw_r = w_d - w_r;
+    dw_r = w_d - w_r_filtered;
     dw_r *= lambdas_model;
-    w_r += dw_r * dt;
+    w_r_filtered += dw_r * dt;
 
     // Sliding surface
     // Desired - Actual to match ArduPilot's logic
@@ -203,6 +205,7 @@ void Custom_Att_Controller::initialize()
     adaptation.zero();
     s_filt_.zero();
     s_last_.zero();
+    w_r_filtered.zero();
 }
 
 void Custom_Att_Controller::reset_ah(Vector3f guesses_ah, Vector3f guesses_dh, Vector3f guesses_bh)
@@ -212,6 +215,7 @@ void Custom_Att_Controller::reset_ah(Vector3f guesses_ah, Vector3f guesses_dh, V
     b_hat = guesses_bh;
     s_filt_.zero();
     s_last_.zero();
+    w_r_filtered.zero();
 }
 
 // Constructor

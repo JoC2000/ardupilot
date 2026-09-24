@@ -51,7 +51,7 @@ private:
     Vector3f a_hat, da_hat;
     Vector3f b_hat, db_hat;
     Vector3f d_hat, dd_hat;
-    Vector3f w_r, dw_r;
+    Vector3f w_r, dw_r, w_r_filtered;
     Vector3f dw_m, w_m;
     Vector3f s, ys;
     Vector3f s_filt_, s_last_;
