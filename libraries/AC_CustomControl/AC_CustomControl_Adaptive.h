@@ -46,6 +46,7 @@ protected:
     AP_Float bh_guess_r, bh_guess_p, bh_guess_y;
     AP_Float bh_min_r, bh_min_p, bh_min_y;
     AP_Float bh_max_r, bh_max_p, bh_max_y;
+    AP_Float s_dz_r, s_dz_p, s_dz_y;
 
     AC_P _p_angle_roll;
     AC_P _p_angle_pitch;

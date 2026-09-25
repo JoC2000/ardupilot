@@ -288,6 +288,33 @@ const AP_Param::GroupInfo AC_CustomControl_Adaptive::var_info[] = {
     AP_SUBGROUPINFO(_pid_rate_pitch, "RAT_PIT_", 50, AC_CustomControl_Adaptive, AC_PID),
     AP_SUBGROUPINFO(_pid_rate_yaw,   "RAT_YAW_", 51, AC_CustomControl_Adaptive, AC_PID),
 
+    // @Param: S_DZ_R
+    // @DisplayName: Roll adaptation dead-zone
+    // @Description: Sliding surface magnitude below which inertia and drag adaptation stop learning on roll. Zero disables the dead-zone.
+    // @Units: rad/s
+    // @Range: 0 1
+    // @Increment: 0.01
+    // @User: Advanced
+    AP_GROUPINFO("S_DZ_R", 52, AC_CustomControl_Adaptive, s_dz_r, 0.2F),
+
+    // @Param: S_DZ_P
+    // @DisplayName: Pitch adaptation dead-zone
+    // @Description: Sliding surface magnitude below which inertia and drag adaptation stop learning on pitch. Zero disables the dead-zone.
+    // @Units: rad/s
+    // @Range: 0 1
+    // @Increment: 0.01
+    // @User: Advanced
+    AP_GROUPINFO("S_DZ_P", 53, AC_CustomControl_Adaptive, s_dz_p, 0.2F),
+
+    // @Param: S_DZ_Y
+    // @DisplayName: Yaw adaptation dead-zone
+    // @Description: Sliding surface magnitude below which inertia and drag adaptation stop learning on yaw. Zero disables the dead-zone.
+    // @Units: rad/s
+    // @Range: 0 1
+    // @Increment: 0.01
+    // @User: Advanced
+    AP_GROUPINFO("S_DZ_Y", 54, AC_CustomControl_Adaptive, s_dz_y, 0.1F),
+
     AP_GROUPEND
 };
 
@@ -363,6 +390,7 @@ Vector3f AC_CustomControl_Adaptive::update(void)
     Vector3f p_gains{p_roll.get(), p_pitch.get(), p_yaw.get()};
     Vector3f p_gains_d{p_roll_d.get(), p_pitch_d.get(), p_yaw_d.get()};
     Vector3f p_gains_b{p_roll_b.get(), p_pitch_b.get(), p_yaw_b.get()};
+    Vector3f s_deadzone{s_dz_r.get(), s_dz_p.get(), s_dz_y.get()};
     
     Vector3f gyro_latest = _ahrs->get_gyro_latest();
     Vector3f motor_out;
@@ -376,7 +404,7 @@ Vector3f AC_CustomControl_Adaptive::update(void)
     adaptive_controller.step(
                             target_rate, gyro_latest, U_adaptive, _dt,
                             ah_min, ah_max, lambdas_model, kd_gains,
-                            p_gains, p_gains_d, dh_min, dh_max, p_gains_b, bh_min, bh_max);
+                            p_gains, p_gains_d, dh_min, dh_max, p_gains_b, bh_min, bh_max, s_deadzone);
 
     Vector3f U_total = U_pid + U_adaptive;
 

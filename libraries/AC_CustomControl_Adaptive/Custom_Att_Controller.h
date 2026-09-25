@@ -24,7 +24,7 @@ public:
 
     // Controller step function
     void step(Vector3f w_d, Vector3f w, Vector3f &U_adaptive, float dt, Vector3f ah_min, Vector3f ah_max, Vector3f lambdas_model,
-              Vector3f kd_gains, Vector3f p_gains, Vector3f p_gains_d, Vector3f dh_min, Vector3f dh_max, Vector3f p_gains_b ,Vector3f bh_min, Vector3f bh_max);
+              Vector3f kd_gains, Vector3f p_gains, Vector3f p_gains_d, Vector3f dh_min, Vector3f dh_max, Vector3f p_gains_b ,Vector3f bh_min, Vector3f bh_max, Vector3f s_deadzone);
 
     void Log_CC0(Vector3f U_total, Vector3f U_pid, Vector3f U_adaptive, Vector3f att_err) const;
 
@@ -37,6 +37,8 @@ public:
     void Log_CC4(Vector3f bh, Vector3f dbh) const;
 
     float param_projection(float a_hat, float da_hat, float ahat_min, float ahat_max);
+
+    float deadzone(float s_axis, float dz);
 
     void reset_ah(Vector3f guesses_ah, Vector3f guesses_dh, Vector3f guesses_bh);
 
@@ -54,7 +56,7 @@ private:
     Vector3f w_r, dw_r, w_r_filtered;
     Vector3f dw_m, w_m;
     Vector3f s, ys;
-    Vector3f s_filt_, s_last_;
+    Vector3f s_filt_, s_last_, s_adapt_;
     Vector3f controller, adaptation;
     Matrix3f Y;
 };

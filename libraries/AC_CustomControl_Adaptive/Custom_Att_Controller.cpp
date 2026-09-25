@@ -95,10 +95,21 @@ float Custom_Att_Controller::param_projection(float ahat, float dahat, float aha
     }
 }
 
+float Custom_Att_Controller::deadzone(float s_axis, float dz)
+{
+    if (s_axis > dz) {
+        return s_axis - dz;
+    } else if (s_axis < -dz) {
+        return s_axis + dz;
+    } else {
+        return 0.0F;
+    }
+}
+
 void Custom_Att_Controller::step(
     Vector3f w_d, Vector3f w, Vector3f &U_adaptive, float dt, Vector3f ah_min,
     Vector3f ah_max, Vector3f lambdas_model, Vector3f kd_gains, 
-    Vector3f p_gains, Vector3f p_gains_d, Vector3f dh_min, Vector3f dh_max, Vector3f p_gains_b, Vector3f bh_min, Vector3f bh_max)
+    Vector3f p_gains, Vector3f p_gains_d, Vector3f dh_min, Vector3f dh_max, Vector3f p_gains_b, Vector3f bh_min, Vector3f bh_max, Vector3f s_deadzone)
 {
     Y.zero();
 
@@ -139,13 +150,20 @@ void Custom_Att_Controller::step(
 
     // Adaptation law
     // da_hat = P*Y^(T)*s
-    ys = Y.transposed() * s_filt_;
+    // ys = Y.transposed() * s_filt_;
+
+    s_adapt_.x = deadzone(s_filt_.x, s_deadzone.x);
+    s_adapt_.y = deadzone(s_filt_.y, s_deadzone.y);
+    s_adapt_.z = deadzone(s_filt_.z, s_deadzone.z);
+
+    ys = Y.transposed() * s_adapt_;
+
     da_hat = ys;
     da_hat *= p_gains;
 
     // Adaptation for non linear effects
     // dd_hat = P*Y_d^(T)*s
-    dd_hat = s_filt_;
+    dd_hat = s_adapt_;
     dd_hat *= w;
     dd_hat *= p_gains_d;
 
