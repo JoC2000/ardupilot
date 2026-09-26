@@ -371,7 +371,19 @@ Vector3f AC_CustomControl_Adaptive::update(void)
             _thrust_angle, _thrust_error_angle);
 
     Quaternion rotation_target_to_body = attitude_body.inverse() * attitude_target;
-    Vector3f ang_vel_body_feedforward = rotation_target_to_body * _att_control->get_attitude_target_ang_vel();
+    const Vector3f &w_tgt = _att_control->get_attitude_target_ang_vel();
+    Vector3f ang_vel_body_feedforward = rotation_target_to_body * w_tgt;
+
+    if (_seed_ff || !is_positive(_dt)) {
+        _w_tgt_last = w_tgt;
+        _seed_ff = false;
+    }
+
+    Vector3f dw_tgt = (w_tgt - _w_tgt_last) / _dt;
+    _w_tgt_last = w_tgt;
+    Vector3f ang_accel_body_feedforward = rotation_target_to_body * dw_tgt;
+
+    Vector3f lambda_att{_p_angle_roll.kP(), _p_angle_pitch.kP(), _p_angle_yaw.kP()};
 
     Vector3f target_rate;
     target_rate[0] = _p_angle_roll.kP() * attitude_error.x + ang_vel_body_feedforward[0];
@@ -385,7 +397,6 @@ Vector3f AC_CustomControl_Adaptive::update(void)
     Vector3f bh_min{bh_min_r.get(), bh_min_p.get(), bh_min_y.get()};
     Vector3f bh_max{bh_max_r.get(), bh_max_p.get(), bh_max_y.get()};
     Vector3f lambdas_sliding{lambda_sr.get(), lambda_sp.get(), lambda_sy.get()};
-    Vector3f lambdas_model{lambda_mr.get(), lambda_mp.get(), lambda_my.get()};
     Vector3f kd_gains{k1.get(), k2.get(), k3.get()};
     Vector3f p_gains{p_roll.get(), p_pitch.get(), p_yaw.get()};
     Vector3f p_gains_d{p_roll_d.get(), p_pitch_d.get(), p_yaw_d.get()};
@@ -403,7 +414,7 @@ Vector3f AC_CustomControl_Adaptive::update(void)
     Vector3f U_adaptive;
     adaptive_controller.step(
                             target_rate, gyro_latest, U_adaptive, _dt,
-                            ah_min, ah_max, lambdas_model, kd_gains,
+                            ah_min, ah_max, ang_vel_body_feedforward, ang_accel_body_feedforward, lambda_att, kd_gains,
                             p_gains, p_gains_d, dh_min, dh_max, p_gains_b, bh_min, bh_max, s_deadzone);
 
     Vector3f U_total = U_pid + U_adaptive;
@@ -428,6 +439,8 @@ void AC_CustomControl_Adaptive::reset(void)
     _pid_rate_roll.reset_filter();
     _pid_rate_pitch.reset_filter();
     _pid_rate_yaw.reset_filter();
+
+    _seed_ff = true;
 }
 
 void AC_CustomControl_Adaptive::set_notch_sample_rate(float sample_rate)

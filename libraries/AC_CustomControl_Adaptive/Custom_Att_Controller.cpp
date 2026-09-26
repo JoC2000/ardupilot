@@ -108,17 +108,18 @@ float Custom_Att_Controller::deadzone(float s_axis, float dz)
 
 void Custom_Att_Controller::step(
     Vector3f w_d, Vector3f w, Vector3f &U_adaptive, float dt, Vector3f ah_min,
-    Vector3f ah_max, Vector3f lambdas_model, Vector3f kd_gains, 
+    Vector3f ah_max, Vector3f w_ff, Vector3f dw_ff, Vector3f lambda_att, Vector3f kd_gains, 
     Vector3f p_gains, Vector3f p_gains_d, Vector3f dh_min, Vector3f dh_max, Vector3f p_gains_b, Vector3f bh_min, Vector3f bh_max, Vector3f s_deadzone)
 {
     Y.zero();
 
+    // Virtual reference: w_d already carries the theory wd + lambda(att_error)
     w_r = w_d;
 
-    // Virtual reference
-    dw_r = w_d - w_r_filtered;
-    dw_r *= lambdas_model;
-    w_r_filtered += dw_r * dt;
+    // Acceleration reference
+    Vector3f plant = w_ff - w;
+    plant *= lambda_att;
+    dw_r = dw_ff + plant;
 
     // Sliding surface
     // Desired - Actual to match ArduPilot's logic
@@ -129,9 +130,9 @@ void Custom_Att_Controller::step(
     s_filt_ += (s - s_last_) * calc_lowpass_alpha_dt(dt, 15.0F);
 
     // Populate Y matrix
-    Y.a.x = dw_r.x;           Y.a.y = -(w.y * w_r.z);   Y.a.z = w_r.y * w.z;
-    Y.b.x = w.x * w_r.z;      Y.b.y = dw_r.y;           Y.b.z = -(w_r.x * w.z);
-    Y.c.x = -(w.x * w_r.y);   Y.c.y = w_r.x * w.y;      Y.c.z = dw_r.z;
+    Y.a.x = dw_ff.x;           Y.a.y = -(w_ff.y * w_ff.z);   Y.a.z = w_ff.y * w_ff.z;
+    Y.b.x = w_ff.x * w_ff.z;      Y.b.y = dw_ff.y;           Y.b.z = -(w_ff.x * w_ff.z);
+    Y.c.x = -(w_ff.x * w_ff.y);   Y.c.y = w_ff.x * w_ff.y;      Y.c.z = dw_ff.z;
 
     // Populate Yd matrix
     // Yd matrix is a diagonal matrix that contains wx,wy and wz.
@@ -223,7 +224,6 @@ void Custom_Att_Controller::initialize()
     adaptation.zero();
     s_filt_.zero();
     s_last_.zero();
-    w_r_filtered.zero();
 }
 
 void Custom_Att_Controller::reset_ah(Vector3f guesses_ah, Vector3f guesses_dh, Vector3f guesses_bh)
@@ -233,7 +233,6 @@ void Custom_Att_Controller::reset_ah(Vector3f guesses_ah, Vector3f guesses_dh, V
     b_hat = guesses_bh;
     s_filt_.zero();
     s_last_.zero();
-    w_r_filtered.zero();
 }
 
 // Constructor

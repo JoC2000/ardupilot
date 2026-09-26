@@ -55,6 +55,9 @@ protected:
     AC_PID _pid_rate_roll;
     AC_PID _pid_rate_pitch;
     AC_PID _pid_rate_yaw;
+
+    Vector3f _w_tgt_last;
+    bool _seed_ff = true;
 };
 
 #endif  // AP_CUSTOMCONTROL_ADAPTIVE_ENABLED
