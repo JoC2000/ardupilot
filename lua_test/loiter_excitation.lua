@@ -80,6 +80,11 @@ local TST_SEG_T = bind_param(3, "SEG_T", 0.5)
 local sw_enable = rc:find_channel_for_option(AUX_RC_OVERRIDE_ENABLE)
 local sw_cc = rc:find_channel_for_option(AUX_CUSTOM_CONTROLLER)
 
+if not sw_enable then
+    gcs:send_text(SEV_WARNING, "TST: no RCx_OPTION=46 switch, script disabled")
+    return
+end
+
 local running = false
 local prev_sw = sw_enable and sw_enable:get_aux_switch_pos() or 0
 local t0_s, start_pos, axis, chan, amp, seg_t, profile
@@ -153,7 +158,12 @@ local function try_start()
         return "no position estimate"
     end
 
-    local ch_num = math.floor(param:get(RCMAP_PARAMS[a]))
+    local rcmap = param:get(RCMAP_PARAMS[a])
+    if not rcmap then
+        return "could not read " .. RCMAP_PARAMS[a]
+    end
+
+    local ch_num = math.floor(rcmap)
     local prefix = string.format("RC%d_", ch_num)
     chan = rc:get_channel(ch_num)
     trim = param:get(prefix .. "TRIM")
@@ -240,11 +250,6 @@ local function protected_update()
         chan:set_override(0)
     end
     gcs:send_text(0, "TST: script error, stopped: " .. tostring(ret))
-end
-
-if not sw_enable then
-    gcs:send_text(SEV_WARNING, "TST: no RCx_OPTION=46 switch, script disabled")
-    return
 end
 
 gcs:send_text(SEV_INFO, "TST: loaded, flip RC_OVERRIDE_ENABLE switch to run")
