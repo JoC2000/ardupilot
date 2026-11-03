@@ -45,41 +45,7 @@ const AP_Param::GroupInfo AC_CustomControl_Adaptive::var_info[] = {
     // @User: Advanced
     AP_GROUPINFO("AH_MAX_Y", 6, AC_CustomControl_Adaptive, ah_max_y, 0.1F),
 
-    // @Param: L_SLIDING_R
-    // @DisplayName: L_SLIDING_R
-    // @Description: Lambda gain for x rate sliding surface
-    // @User: Advanced
-    AP_GROUPINFO("L_SLIDING_R", 7, AC_CustomControl_Adaptive, lambda_sr, 0.87F),
-
-    // @Param: L_SLIDING_P
-    // @DisplayName: L_SLIDING_P
-    // @Description: Lambda gain for y rate sliding surface
-    // @User: Advanced
-    AP_GROUPINFO("L_SLIDING_P", 8, AC_CustomControl_Adaptive, lambda_sp, 0.73F),
-
-    // @Param: L_SLIDING_Y
-    // @DisplayName: L_SLIDING_Y
-    // @Description: Lambda gain for z rate sliding surface
-    // @User: Advanced
-    AP_GROUPINFO("L_SLIDING_Y", 9, AC_CustomControl_Adaptive, lambda_sy, 0.45F),
-
-    // @Param: K_ROLL
-    // @DisplayName: K_ROLL
-    // @Description: K gain for Roll controller
-    // @User: Advanced
-    AP_GROUPINFO("K_ROLL", 10, AC_CustomControl_Adaptive, k1, 0.045F),
-
-    // @Param: K_PITCH
-    // @DisplayName: K_PITCH
-    // @Description: K gain for Pitch controller
-    // @User: Advanced
-    AP_GROUPINFO("K_PITCH", 11, AC_CustomControl_Adaptive, k2, 0.045F),
-
-    // @Param: K_YAW
-    // @DisplayName: K_YAW
-    // @Description: K gain for Yaw controller
-    // @User: Advanced
-    AP_GROUPINFO("K_YAW", 12, AC_CustomControl_Adaptive, k3, 0.023F),
+    // 7-12 were L_SLIDING_R/P/Y and K_ROLL/PITCH/YAW, do not reuse
 
     // @Param: P_ROLL
     // @DisplayName: P_ROLL
@@ -117,23 +83,7 @@ const AP_Param::GroupInfo AC_CustomControl_Adaptive::var_info[] = {
     // @User: Advanced
     AP_GROUPINFO("GUESS_Y", 18, AC_CustomControl_Adaptive, ah_guess_y, 0.01F),
 
-    // @Param: L_MODEL_R
-    // @DisplayName: L_MODEL_R
-    // @Description: Lambda gain for x rate reference model
-    // @User: Advanced
-    AP_GROUPINFO("L_MODEL_R", 19, AC_CustomControl_Adaptive, lambda_mr, 15.0F),
-
-    // @Param: L_MODEL_P
-    // @DisplayName: L_MODEL_P
-    // @Description: Lambda gain for y rate reference model
-    // @User: Advanced
-    AP_GROUPINFO("L_MODEL_P", 20, AC_CustomControl_Adaptive, lambda_mp, 15.0F),
-
-    // @Param: L_MODEL_Y
-    // @DisplayName: L_MODEL_Y
-    // @Description: Lambda gain for z rate reference model
-    // @User: Advanced
-    AP_GROUPINFO("L_MODEL_Y", 21, AC_CustomControl_Adaptive, lambda_my, 15.0F),
+    // 19-21 were L_MODEL_R/P/Y, do not reuse
 
     // @Param: P_ROLL_D
     // @DisplayName: P_ROLL_D
@@ -396,15 +346,12 @@ Vector3f AC_CustomControl_Adaptive::update(void)
     Vector3f dh_max{dh_max_r.get(), dh_max_p.get(), dh_max_y.get()};
     Vector3f bh_min{bh_min_r.get(), bh_min_p.get(), bh_min_y.get()};
     Vector3f bh_max{bh_max_r.get(), bh_max_p.get(), bh_max_y.get()};
-    Vector3f lambdas_sliding{lambda_sr.get(), lambda_sp.get(), lambda_sy.get()};
-    Vector3f kd_gains{k1.get(), k2.get(), k3.get()};
     Vector3f p_gains{p_roll.get(), p_pitch.get(), p_yaw.get()};
     Vector3f p_gains_d{p_roll_d.get(), p_pitch_d.get(), p_yaw_d.get()};
     Vector3f p_gains_b{p_roll_b.get(), p_pitch_b.get(), p_yaw_b.get()};
     Vector3f s_deadzone{s_dz_r.get(), s_dz_p.get(), s_dz_y.get()};
     
     Vector3f gyro_latest = _ahrs->get_gyro_latest();
-    Vector3f motor_out;
     Vector3f U_pid;
 
     U_pid.x = _pid_rate_roll.update_all(target_rate[0], gyro_latest[0], _dt, false);
@@ -414,7 +361,7 @@ Vector3f AC_CustomControl_Adaptive::update(void)
     Vector3f U_adaptive;
     adaptive_controller.step(
                             target_rate, gyro_latest, U_adaptive, _dt,
-                            ah_min, ah_max, ang_vel_body_feedforward, ang_accel_body_feedforward, lambda_att, kd_gains,
+                            ah_min, ah_max, ang_vel_body_feedforward, ang_accel_body_feedforward, lambda_att,
                             p_gains, p_gains_d, dh_min, dh_max, p_gains_b, bh_min, bh_max, s_deadzone);
 
     Vector3f U_total = U_pid + U_adaptive;

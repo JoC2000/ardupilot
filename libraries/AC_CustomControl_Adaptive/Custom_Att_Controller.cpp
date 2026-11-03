@@ -108,7 +108,7 @@ float Custom_Att_Controller::deadzone(float s_axis, float dz)
 
 void Custom_Att_Controller::step(
     Vector3f w_d, Vector3f w, Vector3f &U_adaptive, float dt, Vector3f ah_min,
-    Vector3f ah_max, Vector3f w_ff, Vector3f dw_ff, Vector3f lambda_att, Vector3f kd_gains, 
+    Vector3f ah_max, Vector3f w_ff, Vector3f dw_ff, Vector3f lambda_att,
     Vector3f p_gains, Vector3f p_gains_d, Vector3f dh_min, Vector3f dh_max, Vector3f p_gains_b, Vector3f bh_min, Vector3f bh_max, Vector3f s_deadzone)
 {
     Y.zero();
@@ -123,11 +123,9 @@ void Custom_Att_Controller::step(
 
     // Sliding surface
     // Desired - Actual to match ArduPilot's logic
-    s_last_ = s_filt_;
-
     s = w_r - w;
 
-    s_filt_ += (s - s_last_) * calc_lowpass_alpha_dt(dt, 15.0F);
+    s_filt_ += (s - s_filt_) * calc_lowpass_alpha_dt(dt, 15.0F);
 
     // Populate Y matrix
     Y.a.x = dw_ff.x;           Y.a.y = -(w_ff.y * w_ff.z);   Y.a.z = w_ff.y * w_ff.z;
@@ -151,8 +149,6 @@ void Custom_Att_Controller::step(
 
     // Adaptation law
     // da_hat = P*Y^(T)*s
-    // ys = Y.transposed() * s_filt_;
-
     s_adapt_.x = deadzone(s_filt_.x, s_deadzone.x);
     s_adapt_.y = deadzone(s_filt_.y, s_deadzone.y);
     s_adapt_.z = deadzone(s_filt_.z, s_deadzone.z);
@@ -213,17 +209,13 @@ void Custom_Att_Controller::initialize()
 {
     w_r.zero();
     dw_r.zero();
-    w_m.zero();
-    dw_m.zero();
     s.zero();
     Y.zero();
     da_hat.zero();
     dd_hat.zero();
     db_hat.zero();
-    controller.zero();
     adaptation.zero();
     s_filt_.zero();
-    s_last_.zero();
 }
 
 void Custom_Att_Controller::reset_ah(Vector3f guesses_ah, Vector3f guesses_dh, Vector3f guesses_bh)
@@ -232,7 +224,6 @@ void Custom_Att_Controller::reset_ah(Vector3f guesses_ah, Vector3f guesses_dh, V
     d_hat = guesses_dh;
     b_hat = guesses_bh;
     s_filt_.zero();
-    s_last_.zero();
 }
 
 // Constructor
